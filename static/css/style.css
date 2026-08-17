@@ -86,6 +86,55 @@ h1, h2, h3, h4 {
   transform: rotate(45deg);
 }
 
+/* ===========================================================
+   Geleneksel süsleme ögeleri ("modern ama geleneksel izler taşıyan")
+   Türk süsleme sanatının en tanıdık motiflerinden biri olan LALE
+   (tulip) siluetini, ince bir altın çizgiyle birleştiren küçük bir
+   "flourish" - başlıkların altında otomatik beliriyor (::after), hiçbir
+   şablona elle eklenmesi gerekmiyor. Renk için CSS mask + background-color
+   kullanılıyor, böylece --gold değişkeni değişirse otomatik uyumlu kalır.
+   =========================================================== */
+:root {
+  --motif-flourish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 24'%3E%3Cline x1='0' y1='12' x2='90' y2='12' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M114 3 L117 9C122 9 124 13 122 17C120 20 116 20 115 18C114 20 110 20 108 17C106 13 108 9 113 9Z' fill='%23000'/%3E%3C/svg%3E");
+}
+
+.page-header h1::after,
+.section-title h2::after {
+  content: "";
+  display: block;
+  width: 132px;
+  height: 22px;
+  background-color: var(--gold);
+  -webkit-mask-image: var(--motif-flourish);
+  mask-image: var(--motif-flourish);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: left center;
+  mask-position: left center;
+}
+
+.page-header h1::after {
+  margin: 16px 0 0;
+}
+
+.section-title h2::after {
+  position: absolute;
+  left: 0;
+  bottom: -22px;
+}
+
+/* Osmanlı/Selçuklu ahşap kafes (mashrabiya) işlerinden ilham alan, iki
+   çapraz çizginin kesişmesiyle oluşan çok hafif bir baklava deseni - koyu
+   zeminli bölümlerde (footer, fiyat panosu) arka planı zenginleştiriyor,
+   okunabilirliği hiç etkilemeyecek kadar düşük opaklıkta. */
+.motif-lattice-bg {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(205,177,130,.05) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(205,177,130,.05) 0 1px, transparent 1px 24px);
+}
+
 .eyebrow {
   display: block;
   font-size: .74rem;
@@ -688,9 +737,39 @@ img {
 }
 
 .product-body {
+  position: relative;
   padding: 18px 2px 0;
   border-top: 1px solid var(--border);
   margin-top: 18px;
+}
+
+/* Kart üzerine gelince ayraç çizgisinin ortasında küçük bir lale motifi
+   beliriyor - varsayılan hâlde sade/modern, etkileşimde geleneksel bir
+   detay açığa çıkıyor. */
+.product-body::before,
+.news-body::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%) scale(.6);
+  background-color: var(--gold);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 L14 8C18 8 20 11 18 15C16 18 12 18 12 15C12 18 8 18 6 15C4 11 6 8 10 8Z' fill='%23000'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 L14 8C18 8 20 11 18 15C16 18 12 18 12 15C12 18 8 18 6 15C4 11 6 8 10 8Z' fill='%23000'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+}
+
+.product-card:hover .product-body::before,
+.news-card:hover .news-body::before {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }
 
 .product-body h3 {
@@ -1156,7 +1235,10 @@ select.panel-input {
 
 /* ---------- Piyasa Durumu panosu (koyu tema, ticker tablo) ---------- */
 .board-section {
-  background: #0a0a0a;
+  background:
+    repeating-linear-gradient(45deg, rgba(205,177,130,.035) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(205,177,130,.035) 0 1px, transparent 1px 24px),
+    #0a0a0a;
   padding: 32px 0 40px;
 }
 
@@ -1324,10 +1406,14 @@ select.panel-input {
 
 /* ---------- Footer ---------- */
 .site-footer {
-  background: var(--dark-soft);
+  background:
+    repeating-linear-gradient(45deg, rgba(205,177,130,.05) 0 1px, transparent 1px 24px),
+    repeating-linear-gradient(-45deg, rgba(205,177,130,.05) 0 1px, transparent 1px 24px),
+    var(--dark-soft);
   color: #cfc7b3;
   padding: 40px 0 24px;
   margin-top: 60px;
+  border-top: 1px solid rgba(163,129,74,.4);
 }
 
 .site-footer .container {
