@@ -1,0 +1,26 @@
+---
+# cPanel "Git Version Control" bu dosyayı otomatik bulur ve reponun
+# "Manage > Pull or Deploy" sekmesinde "Deploy HEAD Commit" tıklandığında
+# aşağıdaki adımları SIRAYLA, aynı kabuk (shell) oturumunda çalıştırır:
+#
+#   1) Kod dosyalarını (core/, store/, static/, manage.py, requirements.txt)
+#      canlı uygulama klasörüne kopyalar - db.sqlite3, media/, .env, venv,
+#      staticfiles/, logs/ klasörlerine HİÇ dokunmaz (repoda zaten yoklar).
+#   2) Python sanal ortamını (virtualenv) etkinleştirir.
+#   3) Varsa yeni/değişen paketleri kurar (pip install).
+#   4) CSS/JS dosyalarını yeniden derler (collectstatic) - WhiteNoise
+#      hash'li dosya adları kullandığı için bu adım olmadan tasarım
+#      değişiklikleri canlı sitede GÖRÜNMEZ.
+#   5) Varsa yeni veritabanı değişikliklerini uygular (migrate).
+#   6) Python uygulamasını yeniden başlatır (Passenger restart.txt).
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/turgujjr/turgutsarraf.com/
+    - /bin/cp -R core store static manage.py requirements.txt $DEPLOYPATH
+    - source /home/turgujjr/virtualenv/turgutsarraf.com/3.11/bin/activate
+    - cd $DEPLOYPATH
+    - pip install -r requirements.txt --quiet
+    - python manage.py collectstatic --noinput
+    - python manage.py migrate --noinput
+    - mkdir -p $DEPLOYPATH/tmp
+    - /bin/touch $DEPLOYPATH/tmp/restart.txt
