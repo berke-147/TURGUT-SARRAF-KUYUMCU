@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ yazi.title }} | Turgut Sarraf{% endblock %}
+{% block meta_description %}{{ yazi.ozet_goster }}{% endblock %}
+{% block og_title %}{{ yazi.title }} | Turgut Sarraf{% endblock %}
+{% block og_description %}{{ yazi.ozet_goster }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+{% if yazi.cover_image %}
+<meta property="og:image" content="{{ site_domain }}{{ yazi.cover_image.url }}">
+<meta name="twitter:image" content="{{ site_domain }}{{ yazi.cover_image.url }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="page-header page-header--compact">
+        <div class="container" style="max-width: 760px;">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> /
+                <a href="{% url 'blog_list' %}">Blog</a> /
+                {{ yazi.title }}
+            </div>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container" style="max-width: 760px;">
+            <span class="eyebrow">Rehber &amp; Bakım</span>
+            <h1>{{ yazi.title }}</h1>
+            <p class="news-date">{{ yazi.created_at|date:"d.m.Y" }}{% if yazi.author %} &middot; {{ yazi.author.get_full_name|default:yazi.author.username }}{% endif %}</p>
+
+            {% if yazi.cover_image %}
+            <div class="detail-image" style="margin: 20px 0;">
+                <img src="{{ yazi.cover_image.url }}" alt="{{ yazi.title }}">
+            </div>
+            {% endif %}
+
+            <div>{{ yazi.content|linebreaks }}</div>
+        </div>
+    </section>
+
+    {% if diger_yazilar %}
+    <section class="section" style="padding-top:0;">
+        <div class="container">
+            <div class="section-title">
+                <h2>Diğer Yazılar</h2>
+            </div>
+            <div class="news-grid">
+                {% for digeri in diger_yazilar %}
+                <a class="news-card" href="{% url 'blog_detail' digeri.slug %}">
+                    {% if digeri.cover_image %}
+                    <div class="news-thumb">
+                        <img src="{{ digeri.cover_image.url }}" alt="{{ digeri.title }}">
+                    </div>
+                    {% endif %}
+                    <div class="news-body">
+                        <h3>{{ digeri.title }}</h3>
+                        <p class="news-excerpt">{{ digeri.ozet_goster }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Kategoriler - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <div class="panel-header-row">
+                <h2>Kategoriler</h2>
+            </div>
+
+            <div class="converter-box" style="margin-bottom: 24px;">
+                <form method="post" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+                    {% csrf_token %}
+                    <div class="panel-field" style="flex:2; min-width:200px; margin-bottom:0;">
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="panel-field" style="flex:1; min-width:120px; margin-bottom:0;">
+                        <label for="{{ form.display_order.id_for_label }}">{{ form.display_order.label }}</label>
+                        {{ form.display_order }}
+                    </div>
+                    <button type="submit" class="btn">+ Ekle</button>
+                </form>
+                {% if form.errors %}<p class="alert alert-error">{{ form.errors|striptags }}</p>{% endif %}
+            </div>
+
+            <table class="panel-table">
+                <thead>
+                    <tr>
+                        <th>Sıra</th>
+                        <th>Kategori</th>
+                        <th>Ürün Sayısı</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kategori in kategoriler %}
+                    <tr>
+                        <td>{{ kategori.display_order }}</td>
+                        <td>{{ kategori.name }}</td>
+                        <td>{{ kategori.urunler.count }}</td>
+                        <td class="row-actions">
+                            <a href="{% url 'panel_category_delete' kategori.pk %}">Sil</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Henüz kategori eklenmedi.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p style="margin-top: 18px;"><a href="{% url 'panel_dashboard' %}">&larr; Panele dön</a></p>
+        </div>
+    </section>
+
+{% endblock %}

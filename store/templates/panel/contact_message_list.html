@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}İletişim Talepleri - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <div class="panel-header-row">
+                <h2>İletişim Talepleri</h2>
+            </div>
+
+            <table class="panel-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Ad Soyad</th>
+                        <th>Telefon</th>
+                        <th>E-posta</th>
+                        <th>Mesaj</th>
+                        <th>Tarih</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mesaj in mesajlar %}
+                    <tr>
+                        <td>{% if not mesaj.is_read %}<span class="badge badge-gold">Yeni</span>{% endif %}</td>
+                        <td>{{ mesaj.name }}</td>
+                        <td>{% if mesaj.phone %}<a href="tel:{{ mesaj.phone }}">{{ mesaj.phone }}</a>{% else %}—{% endif %}</td>
+                        <td>{{ mesaj.email|default:"—" }}</td>
+                        <td style="max-width:320px;">{{ mesaj.message }}</td>
+                        <td>{{ mesaj.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="row-actions">
+                            {% if not mesaj.is_read %}
+                            <form method="post" action="{% url 'panel_contact_message_mark_read' mesaj.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary" style="padding:6px 12px; font-size:.8rem;">Okundu İşaretle</button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'panel_contact_message_delete' mesaj.pk %}">Sil</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7">Henüz mesaj yok.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p style="margin-top: 18px;"><a href="{% url 'panel_dashboard' %}">&larr; Panele dön</a></p>
+        </div>
+    </section>
+
+{% endblock %}

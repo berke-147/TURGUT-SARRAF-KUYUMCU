@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Canlı Altın ve Gümüş Fiyatları | Turgut Sarraf{% endblock %}
+{% block meta_description %}Anlık güncellenen çeyrek, yarım, tam altın, gram altın ve gümüş fiyatlarını Turgut Sarraf Piyasa Durumu panosundan takip et.{% endblock %}
+
+{% block content %}
+
+    <section class="board-section">
+        <div class="price-board" id="rate-grid" data-rates-url="{% url 'rates_api' %}">
+
+            <div class="board-header">
+                <h1 class="board-title">TURGUT SARRAF</h1>
+                <div class="board-quickstats">
+                    <span data-quick="HAS">HAS: <strong data-bf="qbuy">{% if has_veri %}{{ has_veri.buy_price|floatformat:2 }}{% else %}-{% endif %}</strong> / <strong data-bf="qsell">{% if has_veri %}{{ has_veri.sell_price|floatformat:2 }}{% else %}-{% endif %}</strong></span>
+                    <span data-quick="ONSUSD">ONS/$: <strong data-bf="qbuy">{% if ons_usd_veri %}{{ ons_usd_veri.final_buy_price|floatformat:2 }}{% else %}-{% endif %}</strong> / <strong data-bf="qsell">{% if ons_usd_veri %}{{ ons_usd_veri.final_sell_price|floatformat:2 }}{% else %}-{% endif %}</strong></span>
+                </div>
+            </div>
+
+            {% if piyasa_kapali %}
+            <div class="board-notice">
+                Bugün hafta sonu olduğu için Kapalı Çarşı fiilen kapalıdır. Fiyatlar hafta içi
+                piyasa açıldığında yeniden hareket eder — sayıların sabit durması bir hata değildir.
+            </div>
+            {% endif %}
+
+            <div class="board-meta">
+                {% now "d F Y l" %} | Son Güncelleme: <span id="board-updated">--:--:--</span> | Son Değişim: <span id="board-changed">--:--:--</span>
+            </div>
+
+            <div class="board-table-wrap">
+                <table class="board-table">
+                    <thead>
+                        <tr>
+                            <th>ÜRÜN</th>
+                            <th>YÖN</th>
+                            <th>ALIŞ</th>
+                            <th>SATIŞ</th>
+                            <th>FARK</th>
+                            <th>%</th>
+                            <th>SAAT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for veri in kalemler %}
+                        <tr class="board-row" data-code="{{ veri.code }}">
+                            <td class="board-name">{{ veri.name }}</td>
+                            <td class="board-dir" data-bf="dir">–</td>
+                            <td><span class="pill" data-bf="buy">{{ veri.final_buy_price|floatformat:0 }}</span></td>
+                            <td><span class="pill" data-bf="price">{{ veri.final_sell_price|floatformat:0 }}</span></td>
+                            <td class="board-fark" data-bf="fark">-</td>
+                            <td class="board-pct" data-bf="change">-</td>
+                            <td class="board-time" data-bf="time">--:--:--</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7">Henüz veri girilmedi. <code>python manage.py update_rates</code> komutunu çalıştır ya da panelden kalem ekle.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <p style="margin-top: 16px;">
+            <a href="{% url 'converter' %}">Altın Çeviricisine git &rarr;</a>
+        </p>
+    </section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/board.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Altın Çevirici | Turgut Sarraf{% endblock %}
+{% block meta_description %}Gram altın, çeyrek, yarım, tam altın ve Türk Lirası arasında anlık kurla çeviri yap.{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <div class="container" style="max-width: 640px;">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> / Çevirici
+            </div>
+            <span class="eyebrow">Anlık Hesaplama</span>
+            <h1>Altın Çevirici</h1>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container" style="max-width: 640px;">
+
+            <div class="converter-box" id="converter" data-rates-url="{% url 'rates_api' %}">
+                <div class="converter-row">
+                    <input type="number" id="conv-amount" class="converter-input" value="1" min="0" step="any">
+                    <select id="conv-from" class="converter-select">
+                        <option value="TRY" selected>Türk Lirası</option>
+                        {% for k in kalemler %}
+                        <option value="{{ k.code }}">{{ k.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="button" id="conv-swap" class="btn converter-swap">Değiştir &#8645;</button>
+
+                <div class="converter-row">
+                    <div id="conv-result" class="converter-result">0,00</div>
+                    <select id="conv-to" class="converter-select">
+                        <option value="TRY">Türk Lirası</option>
+                        {% for k in kalemler %}
+                        <option value="{{ k.code }}" {% if k.code == 'USD' %}selected{% endif %}>{{ k.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <p class="converter-note" id="conv-note">Kurlar yükleniyor...</p>
+            </div>
+
+            <p class="empty-note" style="margin-top: 18px;">
+                Sikke bazlı altınlarda (çeyrek, yarım, tam, ata, cumhuriyet) hesap; içerdiği has altın karşılığı
+                üzerindendir, günlük darphane primini yansıtmaz.
+            </p>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/converter.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ haber.title }} | Turgut Sarraf{% endblock %}
+{% block meta_description %}{{ haber.content|striptags|truncatechars:160 }}{% endblock %}
+{% block og_title %}{{ haber.title }} | Turgut Sarraf{% endblock %}
+{% block og_description %}{{ haber.content|striptags|truncatechars:160 }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}
+{% if haber.image %}
+<meta property="og:image" content="{{ site_domain }}{{ haber.image.url }}">
+<meta name="twitter:image" content="{{ site_domain }}{{ haber.image.url }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="page-header page-header--compact">
+        <div class="container" style="max-width: 760px;">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> / {{ haber.title }}
+            </div>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container" style="max-width: 760px;">
+            <span class="news-category">{{ haber.get_category_display }}</span>
+            <h1>{{ haber.title }}</h1>
+            <p class="news-date">{{ haber.created_at|date:"d.m.Y H:i" }} &middot; {{ haber.author }}</p>
+
+            {% if haber.image %}
+            <div class="detail-image" style="margin: 20px 0;">
+                <img src="{{ haber.image.url }}" alt="{{ haber.title }}">
+            </div>
+            {% endif %}
+
+            <div>{{ haber.content|linebreaks }}</div>
+        </div>
+    </section>
+
+{% endblock %}

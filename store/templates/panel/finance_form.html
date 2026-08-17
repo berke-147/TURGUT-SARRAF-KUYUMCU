@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ baslik }} - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container" style="max-width: 640px;">
+            <div class="section-title">
+                <h2>{{ baslik }}</h2>
+            </div>
+
+            {% if kalem %}
+            <p class="empty-note" style="margin-bottom: 16px;">
+                Kod: <strong>{{ kalem.code }}</strong> &nbsp;|&nbsp;
+                Marjlı (sitedeki) alış: <strong>{{ kalem.final_buy_price }}</strong> &nbsp;|&nbsp;
+                Marjlı (sitedeki) satış: <strong>{{ kalem.final_sell_price }}</strong>
+            </p>
+            {% else %}
+            <p class="empty-note" style="margin-bottom: 16px;">
+                Kod, robotun (services.py) tanıdığı bir kod DEĞİLSE, fiyatı hiçbir zaman
+                otomatik güncellenmez — burada girdiğin alış/satış fiyatı elle güncelleyene
+                kadar sabit kalır.
+            </p>
+            {% endif %}
+
+            <div class="converter-box">
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="panel-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.name == 'buy_multiplier' %}
+                        <p class="empty-note">Ham alış fiyatı bu sayıyla DOĞRUDAN çarpılır (yüzde değil). 1 = değişiklik yok. Örn: 0,98 yazarsan ham alıştan %2 düşük gösterilir (dükkan biraz ucuza alır).</p>
+                        {% elif field.name == 'sell_multiplier' %}
+                        <p class="empty-note">Ham satış fiyatı bu sayıyla DOĞRUDAN çarpılır (yüzde değil). 1 = değişiklik yok. Örn: has altını 0,916 ile çarparsan 22 ayar karşılığını bulursun; 1,05 yazarsan satışın üzerine %5 eklenir.</p>
+                        {% elif field.name == 'display_order' %}
+                        <p class="empty-note">Piyasa Durumu tablosunda küçük sayı önce gösterilir.</p>
+                        {% endif %}
+                        {% if field.errors %}<p class="alert alert-error">{{ field.errors|striptags }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="panel-actions">
+                        <button type="submit" class="btn">Kaydet</button>
+                        <a href="{% url 'panel_finance_list' %}" class="btn btn-secondary">Vazgeç</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

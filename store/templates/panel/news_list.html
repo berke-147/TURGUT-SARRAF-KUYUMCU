@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Haber Yönetimi - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <div class="panel-header-row">
+                <h2>Haberler</h2>
+                <a href="{% url 'panel_news_create' %}" class="btn">+ Yeni Haber</a>
+            </div>
+
+            <table class="panel-table">
+                <thead>
+                    <tr>
+                        <th>Başlık</th>
+                        <th>Kategori</th>
+                        <th>Tarih</th>
+                        <th>Yayında mı</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for haber in haberler %}
+                    <tr>
+                        <td>{{ haber.title }}</td>
+                        <td>{{ haber.get_category_display }}</td>
+                        <td>{{ haber.created_at|date:"d.m.Y" }}</td>
+                        <td>{% if haber.is_published %}Evet{% else %}Hayır{% endif %}</td>
+                        <td class="row-actions">
+                            <a href="{% url 'panel_news_edit' haber.pk %}">Düzenle</a>
+                            <a href="{% url 'panel_news_delete' haber.pk %}">Sil</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">Henüz haber eklenmedi.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p style="margin-top: 18px;"><a href="{% url 'panel_dashboard' %}">&larr; Panele dön</a></p>
+        </div>
+    </section>
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel Girişi - Turgut Sarraf{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container" style="max-width: 380px;">
+            <div class="section-title">
+                <h2>Panel Girişi</h2>
+            </div>
+
+            <div class="converter-box">
+                {% if form.errors %}
+                <p class="alert alert-error">Kullanıcı adı veya şifre hatalı.</p>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="panel-field">
+                        <label for="{{ form.username.id_for_label }}">Kullanıcı adı</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="panel-field">
+                        <label for="{{ form.password.id_for_label }}">Şifre</label>
+                        {{ form.password }}
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Giriş Yap</button>
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

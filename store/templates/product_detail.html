@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ urun.name }} | Turgut Sarraf{% endblock %}
+{% block meta_description %}{{ urun.name }} - {% if urun.product_type == 'sabit' %}{{ urun.fixed_price }} TL{% else %}{{ urun.get_purity_display }}, {{ urun.weight_gram }} gram{% endif %}. Turgut Sarraf'ta güncel fiyatla.{% endblock %}
+{% block og_title %}{{ urun.name }} | Turgut Sarraf{% endblock %}
+{% block og_description %}{{ urun.hesapla_fiyat }} TL - Turgut Sarraf Kuyumculuk{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}
+{% if urun.kapak_gorseli %}
+<meta property="og:image" content="{{ site_domain }}{{ urun.kapak_gorseli.url }}">
+<meta name="twitter:image" content="{{ site_domain }}{{ urun.kapak_gorseli.url }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="page-header page-header--compact">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> /
+                <a href="{% url 'product_list' %}">Ürünler</a> /
+                {% if urun.category %}<a href="{% url 'product_list' %}?kategori={{ urun.category.slug }}">{{ urun.category.name }}</a> / {% endif %}
+                {{ urun.name }}
+            </div>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+
+            <div class="detail-wrap">
+                <div>
+                    <div class="gallery-main" id="gallery-main">
+                        {% with ilk_gorsel=urun.images.first %}
+                        {% if ilk_gorsel %}
+                        <img id="gallery-main-img" src="{{ ilk_gorsel.image.url }}" alt="{{ urun.name }}">
+                        {% else %}
+                        <div class="product-thumb" style="width:100%;height:100%;"><span class="placeholder">Görsel yok</span></div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    {% if urun.images.count > 1 %}
+                    <div class="gallery-thumbs">
+                        {% for gorsel in urun.images.all %}
+                        <button type="button" class="{% if forloop.first %}active{% endif %}" data-full="{{ gorsel.image.url }}" onclick="turgutGaleriDegistir(this)">
+                            <img src="{{ gorsel.image.url }}" alt="{{ urun.name }} - {{ forloop.counter }}">
+                        </button>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {% if urun.sku %}<span class="sku-tag">SKU: {{ urun.sku }}</span>{% endif %}
+                    <h1>{{ urun.name }}</h1>
+
+                    {% if urun.product_type == 'sabit' %}
+                    <p class="product-meta">Sabit Fiyatlı Ürün</p>
+                    {% else %}
+                    <div class="badge-row">
+                        <span class="badge badge-gold">{{ urun.get_purity_display }}</span>
+                        <span class="badge">{{ urun.weight_gram }} gram</span>
+                        {% if urun.stone_type != 'tassiz' %}<span class="badge">{{ urun.get_stone_type_display }}</span>{% endif %}
+                        {% if urun.category %}<span class="badge">{{ urun.category.name }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="detail-price-box">
+                        <p class="price">{{ urun.hesapla_fiyat }} TL</p>
+                        {% if urun.product_type == 'sabit' %}
+                        <p class="product-meta">Bu ürünün fiyatı sabittir, altın kurundan etkilenmez.</p>
+                        {% else %}
+                        <p class="product-meta">Fiyat, güncel altın kuruna göre anlık hesaplanır.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="trust-row">
+                        <span class="badge badge-trust">Garantili Ürün</span>
+                        <span class="badge badge-trust">Orijinal Fatura ile Satış</span>
+                    </div>
+
+                    {% if urun.renk_var_mi %}
+                    <div class="variation-block">
+                        <h4>Renk</h4>
+                        <div class="variation-options">
+                            {% for secenek in urun.renk_secenekleri.all %}
+                            <span class="variation-pill" onclick="this.parentElement.querySelectorAll('.variation-pill').forEach(function(p){p.classList.remove('selected')}); this.classList.add('selected')">{{ secenek.get_renk_display }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if urun.olcu_var_mi %}
+                    <div class="variation-block">
+                        <h4>Ölçü</h4>
+                        <div class="variation-options">
+                            {% for secenek in urun.olcu_secenekleri.all %}
+                            <span class="variation-pill {% if not secenek.stokta_var %}disabled{% endif %}" {% if secenek.stokta_var %}onclick="this.parentElement.querySelectorAll('.variation-pill').forEach(function(p){p.classList.remove('selected')}); this.classList.add('selected')"{% endif %}>{{ secenek.olcu }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if urun.description %}
+                    <p>{{ urun.description|linebreaks }}</p>
+                    {% endif %}
+
+                    {% if whatsapp_number %}
+                    <a class="whatsapp-btn" href="{% url 'whatsapp_redirect' %}?kaynak=urun_detay&urun={{ urun.pk }}">
+                        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.92 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.15c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.81-.11-.42-.13-.96-.31-1.65-.6-2.9-1.25-4.79-4.17-4.94-4.36-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.29.57-.36.76-.36h.55c.18 0 .42-.07.65.5.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.16-.29.36-.42.48-.14.13-.28.28-.12.55.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.28.14.44.12.6-.07.17-.19.71-.83.9-1.11.19-.28.38-.24.64-.15.26.1 1.67.79 1.95.93.28.14.47.21.53.33.07.12.07.68-.17 1.36z"/></svg>
+                        WhatsApp'tan Sor
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": "{{ urun.name|escapejs }}",
+        "description": "{{ urun.description|default:urun.name|escapejs }}",
+        {% if urun.kapak_gorseli %}"image": "{{ site_domain }}{{ urun.kapak_gorseli.url }}",{% endif %}
+        "offers": {
+            "@type": "Offer",
+            "url": "{{ site_domain }}{{ request.path }}",
+            "priceCurrency": "TRY",
+            "price": "{{ urun.hesapla_fiyat }}",
+            "availability": "https://schema.org/InStock"
+        }
+    }
+    </script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function turgutGaleriDegistir(btn) {
+    var anaGorsel = document.getElementById('gallery-main-img');
+    if (anaGorsel) {
+        anaGorsel.src = btn.getAttribute('data-full');
+    }
+    document.querySelectorAll('.gallery-thumbs button').forEach(function (b) {
+        b.classList.remove('active');
+    });
+    btn.classList.add('active');
+}
+</script>
+{% endblock %}

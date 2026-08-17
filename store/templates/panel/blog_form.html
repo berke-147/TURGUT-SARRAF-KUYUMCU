@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ baslik }} - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container" style="max-width: 720px;">
+            <div class="section-title">
+                <h2>{{ baslik }}</h2>
+            </div>
+
+            <div class="converter-box">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="panel-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<p class="empty-note">{{ field.help_text }}</p>{% endif %}
+                        {% if field.errors %}<p class="alert alert-error">{{ field.errors|striptags }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="panel-actions">
+                        <button type="submit" class="btn">Kaydet</button>
+                        <a href="{% url 'panel_blog_list' %}" class="btn btn-secondary">Vazgeç</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

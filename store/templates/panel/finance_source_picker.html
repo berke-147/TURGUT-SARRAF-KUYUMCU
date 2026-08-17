@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Kaynak Kalemleri Seç - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <div class="panel-header-row">
+                <h2>Kaynak Kalemleri Seç</h2>
+            </div>
+
+            <p class="empty-note" style="margin-bottom: 16px;">
+                dovizgrafik.com/altin'den çekilebilecek (veya has altın üzerinden hesaplanabilecek)
+                TÜM kalemler aşağıda listelenir. İşaretlediğin kalemler kaydettiğin anda sisteme
+                eklenir; birkaç saniye içinde robot o kalemi otomatik çekmeye başlar. İşaretini
+                kaldırdığın bir kalem ise takipten çıkarılır (sitede bir daha görünmez, kaydı silinir).
+                Gram Altın (Has) burada yok çünkü sistemin çalışması için zorunludur, her zaman
+                otomatik takip edilir. Kaydettikten sonra görünürlük/sıra/kar marjı ayarlarını
+                <a href="{% url 'panel_finance_list' %}">Finansal Veriler</a> listesinden yapabilirsin.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                <table class="panel-table">
+                    <thead>
+                        <tr>
+                            <th>Seç</th>
+                            <th>Kalem</th>
+                            <th>Kaynak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for k in kalemler %}
+                        <tr>
+                            <td><input type="checkbox" name="kodlar" value="{{ k.code }}" {% if k.secili %}checked{% endif %}></td>
+                            <td>{{ k.name }} <span class="empty-note">({{ k.code }})</span></td>
+                            <td>{% if k.kaynak == 'dovizgrafik' %}Canlı (dovizgrafik.com){% else %}Hesaplanan (Has altından){% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="panel-actions" style="margin-top: 18px;">
+                    <button type="submit" class="btn">Kaydet</button>
+                    <a href="{% url 'panel_finance_list' %}" class="btn btn-secondary">Vazgeç</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+{% endblock %}

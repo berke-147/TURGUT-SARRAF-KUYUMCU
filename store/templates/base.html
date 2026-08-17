@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Turgut Sarraf Kuyumculuk – Güncel Altın ve Gümüş Fiyatları{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Turgut Sarraf Kuyumculuk'ta güncel altın, gümüş fiyatları anlık takip edilir; çeyrek, yarım, tam altın ve özel tasarım kuyum ürünleri.{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ site_domain }}{{ request.path }}{% endblock %}">
+
+    {% if google_site_verification %}
+    <meta name="google-site-verification" content="{{ google_site_verification }}">
+    {% endif %}
+
+    <!-- Open Graph / WhatsApp, Facebook vb. paylaşım kartları -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="{{ business_name|default:'Turgut Sarraf' }}">
+    <meta property="og:title" content="{% block og_title %}{{ business_name|default:'Turgut Sarraf Kuyumculuk' }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Güncel altın ve gümüş fiyatları, özel tasarım kuyum ürünleri.{% endblock %}">
+    <meta property="og:url" content="{{ site_domain }}{{ request.path }}">
+    {% block og_image %}{% endblock %}
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ business_name|default:'Turgut Sarraf Kuyumculuk' }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Güncel altın ve gümüş fiyatları, özel tasarım kuyum ürünleri.{% endblock %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Google'a işletme olarak tanınmak için (Google Business Profile ile birlikte kullanılır) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "JewelryStore",
+        "name": "{{ business_name|default:'Turgut Sarraf Kuyumculuk'|escapejs }}",
+        "url": "{{ site_domain|escapejs }}"
+        {% if business_phone %},"telephone": "{{ business_phone|escapejs }}"{% endif %}
+        {% if business_street_address %},"address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{ business_street_address|escapejs }}",
+            "addressLocality": "{{ business_city|escapejs }}",
+            "postalCode": "{{ business_postal_code|escapejs }}",
+            "addressCountry": "TR"
+        }{% endif %}
+        {% if business_latitude and business_longitude %},"geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "{{ business_latitude|escapejs }}",
+            "longitude": "{{ business_longitude|escapejs }}"
+        }{% endif %}
+    }
+    </script>
+
+    {% if ga4_measurement_id %}
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga4_measurement_id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ ga4_measurement_id }}');
+    </script>
+    {% endif %}
+</head>
+<body>
+    {% if request.path|slice:":7" == '/panel/' %}
+    <script>
+        (function () {
+            if (localStorage.getItem('panelTheme') === 'dark') {
+                document.body.setAttribute('data-panel-theme', 'dark');
+            }
+        })();
+    </script>
+    {% endif %}
+
+    <header class="site-header">
+        <div class="container">
+            <a href="{% url 'home' %}" class="brand">
+                <span class="brand-mark">T</span>
+                Turgut Sarraf
+            </a>
+            <nav class="main-nav" id="main-nav">
+                <a href="{% url 'home' %}">Ana Sayfa</a>
+                <a href="{% url 'market' %}">Piyasa Durumu</a>
+                <a href="{% url 'product_list' %}">Ürünler</a>
+                <a href="{% url 'converter' %}">Çevirici</a>
+                <a href="{% url 'home' %}#haberler">Haberler</a>
+                <a href="{% url 'blog_list' %}">Blog</a>
+                <a href="{% url 'contact' %}">İletişim</a>
+            </nav>
+            <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Menüyü aç" aria-expanded="false" aria-controls="main-nav">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    {% if messages %}
+    <div class="container" style="padding-top: 18px;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-col">
+                <h4>Turgut Sarraf</h4>
+                <p class="footer-slogan">Gücü Yansıtan Altın, Güveni Veren İsimdir.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Bağlantılar</h4>
+                <a href="{% url 'home' %}">Ana Sayfa</a>
+                <a href="{% url 'market' %}">Piyasa Durumu</a>
+                <a href="{% url 'product_list' %}">Ürünler</a>
+                <a href="{% url 'converter' %}">Çevirici</a>
+                <a href="{% url 'contact' %}">İletişim &amp; Mağaza</a>
+            </div>
+            <div class="footer-col">
+                <h4>İletişim</h4>
+                {% if business_street_address %}
+                <p><a href="{{ business_maps_url }}" target="_blank" rel="noopener">{{ business_street_address }}{% if business_city %}, {{ business_city }}{% endif %}</a></p>
+                {% endif %}
+                {% if business_phone %}
+                <p><a href="tel:{{ business_phone }}">{{ business_phone }}</a></p>
+                {% endif %}
+                {% if whatsapp_number %}
+                <p><a href="{% url 'whatsapp_redirect' %}?kaynak=genel">WhatsApp'tan Yaz</a></p>
+                {% endif %}
+                {% if not business_street_address and not business_phone %}
+                <p>Bilgi için mağazamızı ziyaret edebilirsiniz.</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; {% now "Y" %} Turgut Sarraf. Tüm hakları saklıdır.
+        </div>
+    </footer>
+
+    {% if whatsapp_number %}
+    <a href="{% url 'whatsapp_redirect' %}?kaynak=genel" class="whatsapp-float" aria-label="WhatsApp'tan yazın" title="WhatsApp'tan yazın">
+        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.92 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.15c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.12.11-1.81-.11-.42-.13-.96-.31-1.65-.6-2.9-1.25-4.79-4.17-4.94-4.36-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.29.57-.36.76-.36h.55c.18 0 .42-.07.65.5.24.58.81 2 .88 2.14.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.16-.29.36-.42.48-.14.13-.28.28-.12.55.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.28.14.44.12.6-.07.17-.19.71-.83.9-1.11.19-.28.38-.24.64-.15.26.1 1.67.79 1.95.93.28.14.47.21.53.33.07.12.07.68-.17 1.36z"/></svg>
+    </a>
+    {% endif %}
+
+    <script src="{% static 'js/rates.js' %}" defer></script>
+    <script>
+        (function () {
+            var toggle = document.getElementById('nav-toggle');
+            var nav = document.getElementById('main-nav');
+            if (!toggle || !nav) return;
+            toggle.addEventListener('click', function () {
+                var acik = nav.classList.toggle('is-open');
+                toggle.classList.toggle('is-open', acik);
+                toggle.setAttribute('aria-expanded', acik ? 'true' : 'false');
+            });
+            nav.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    nav.classList.remove('is-open');
+                    toggle.classList.remove('is-open');
+                    toggle.setAttribute('aria-expanded', 'false');
+                });
+            });
+        })();
+    </script>
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

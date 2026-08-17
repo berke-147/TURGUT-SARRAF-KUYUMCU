@@ -1,0 +1,25 @@
+# Sanal ortam
+venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+logs/
+
+# Gizli bilgiler
+.env
+
+# Yedek arşiv (gerekmiyor, deponun içinde tekrar duruyor)
+store.zip
+
+# Editör / sistem
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

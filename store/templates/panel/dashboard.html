@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel - Turgut Sarraf{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <div class="panel-header-row">
+                <h2>Yönetim Paneli</h2>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button type="button" class="theme-toggle" onclick="turgutTemaDegistir()">🌓 Koyu/Açık Mod</button>
+                    <a href="{% url 'panel_logout' %}" class="btn btn-secondary">Çıkış Yap</a>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ urun_sayisi }}</div>
+                    <div class="stat-label">Toplam Ürün ({{ aktif_urun_sayisi }} yayında)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ kategori_sayisi }}</div>
+                    <div class="stat-label">Kategori</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ okunmamis_mesaj_sayisi }}</div>
+                    <div class="stat-label">Okunmamış Mesaj</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ whatsapp_bugun }}</div>
+                    <div class="stat-label">Bugünkü WhatsApp Tıklaması ({{ whatsapp_toplam }} toplam)</div>
+                </div>
+            </div>
+
+            <div class="panel-card-links">
+                <a href="{% url 'panel_finance_list' %}">
+                    Finansal Veriler / Piyasa Kalemleri
+                    <span>Kalem ekle/sil/yeniden adlandır, alış-satış kar marjını düzenle</span>
+                </a>
+                <a href="{% url 'panel_finance_source_picker' %}">
+                    Kaynak Kalemleri Seç
+                    <span>dovizgrafik.com'dan çekilebilecek tüm kalemleri işaretle, otomatik çekim başlasın</span>
+                </a>
+                <a href="{% url 'panel_product_list' %}">
+                    Ürünler
+                    <span>{{ urun_sayisi }} ürün kayıtlı</span>
+                </a>
+                <a href="{% url 'panel_product_create' %}">
+                    + Yeni Ürün Ekle
+                    <span>Vitrine yeni ürün ekle</span>
+                </a>
+                <a href="{% url 'panel_category_list' %}">
+                    Kategoriler
+                    <span>{{ kategori_sayisi }} kategori kayıtlı</span>
+                </a>
+                <a href="{% url 'panel_contact_message_list' %}">
+                    İletişim Talepleri
+                    <span>{{ okunmamis_mesaj_sayisi }} okunmamış mesaj</span>
+                </a>
+                <a href="{% url 'panel_whatsapp_stats' %}">
+                    WhatsApp İstatistikleri
+                    <span>{{ whatsapp_toplam }} toplam tıklama</span>
+                </a>
+                <a href="{% url 'panel_news_list' %}">
+                    Haberler
+                    <span>{{ haber_sayisi }} haber kayıtlı</span>
+                </a>
+                <a href="{% url 'panel_news_create' %}">
+                    + Yeni Haber Ekle
+                    <span>Piyasa notu / haber ekle</span>
+                </a>
+                <a href="{% url 'panel_blog_list' %}">
+                    Blog Yazıları
+                    <span>{{ blog_sayisi }} yazı kayıtlı</span>
+                </a>
+                <a href="{% url 'panel_blog_create' %}">
+                    + Yeni Blog Yazısı
+                    <span>Ana sayfa vitrinine yeni yazı ekle</span>
+                </a>
+            </div>
+
+            <div class="dashboard-panel-cols">
+                <div class="mini-list">
+                    <h4>Son Mesajlar</h4>
+                    {% for mesaj in son_mesajlar %}
+                    <div class="mini-list-row">
+                        <span>{% if not mesaj.is_read %}<span class="unread-dot"></span>{% endif %}{{ mesaj.name }}</span>
+                        <span>{{ mesaj.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="empty-note">Henüz mesaj yok.</p>
+                    {% endfor %}
+                    <p style="margin-top:12px;"><a href="{% url 'panel_contact_message_list' %}">Tümünü gör &rarr;</a></p>
+                </div>
+
+                <div class="mini-list">
+                    <h4>Son Eklenen Ürünler</h4>
+                    {% for urun in son_urunler %}
+                    <div class="mini-list-row">
+                        <span>{{ urun.name }}</span>
+                        <span>{{ urun.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="empty-note">Henüz ürün yok.</p>
+                    {% endfor %}
+                    <p style="margin-top:12px;"><a href="{% url 'panel_product_list' %}">Tümünü gör &rarr;</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function turgutTemaDegistir() {
+    var mevcut = localStorage.getItem('panelTheme') === 'dark';
+    if (mevcut) {
+        localStorage.removeItem('panelTheme');
+        document.body.removeAttribute('data-panel-theme');
+    } else {
+        localStorage.setItem('panelTheme', 'dark');
+        document.body.setAttribute('data-panel-theme', 'dark');
+    }
+}
+</script>
+{% endblock %}

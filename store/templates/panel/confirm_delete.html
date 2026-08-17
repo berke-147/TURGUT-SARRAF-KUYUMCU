@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Silme Onayı - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container" style="max-width: 480px;">
+            <div class="section-title">
+                <h2>Emin misin?</h2>
+            </div>
+
+            <div class="converter-box">
+                <p>"{{ nesne }}" kalıcı olarak silinecek. Bu işlem geri alınamaz.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="panel-actions">
+                        <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                        <a href="{% url iptal_url %}" class="btn btn-secondary">Vazgeç</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

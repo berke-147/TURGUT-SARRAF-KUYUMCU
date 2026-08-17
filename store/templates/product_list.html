@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Kuyum Ürünleri | Turgut Sarraf{% endblock %}
+{% block meta_description %}Turgut Sarraf'ın altın ve özel tasarım kuyum ürünleri; ayar, gramaj, taş türü ve fiyata göre filtrele, güncel altın kuruna göre anlık fiyatlanan ürünleri incele.{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> / Ürünler
+            </div>
+            <span class="eyebrow">Koleksiyon</span>
+            <h1>Tüm Ürünler</h1>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+
+            <div class="products-layout">
+
+                <details class="filter-panel" open>
+                    <summary>Filtrele</summary>
+                    <form method="get">
+                        <div class="filter-group">
+                            <label for="f-kategori">Kategori</label>
+                            <select name="kategori" id="f-kategori">
+                                <option value="">Tümü</option>
+                                {% for kategori in kategoriler %}
+                                <option value="{{ kategori.slug }}" {% if kategori.slug == secili_kategori %}selected{% endif %}>{{ kategori.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="f-ayar">Ayar</label>
+                            <select name="ayar" id="f-ayar">
+                                <option value="">Tümü</option>
+                                {% for deger, etiket in ayar_secenekleri %}
+                                <option value="{{ deger }}" {% if secili_ayar == deger|stringformat:"s" %}selected{% endif %}>{{ etiket }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="f-tas">Taş Türü</label>
+                            <select name="tas" id="f-tas">
+                                <option value="">Tümü</option>
+                                {% for deger, etiket in tas_secenekleri %}
+                                <option value="{{ deger }}" {% if deger == secili_tas %}selected{% endif %}>{{ etiket }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Gramaj Aralığı</label>
+                            <div class="filter-range">
+                                <input type="number" step="0.01" name="gram_min" value="{{ gram_min }}" placeholder="Min">
+                                <span>–</span>
+                                <input type="number" step="0.01" name="gram_max" value="{{ gram_max }}" placeholder="Max">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>Fiyat Aralığı (TL)</label>
+                            <div class="filter-range">
+                                <input type="number" step="1" name="fiyat_min" value="{{ fiyat_min }}" placeholder="Min">
+                                <span>–</span>
+                                <input type="number" step="1" name="fiyat_max" value="{{ fiyat_max }}" placeholder="Max">
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="f-sirala">Sırala</label>
+                            <select name="sirala" id="f-sirala">
+                                <option value="-created_at" {% if secili_sirala == '-created_at' %}selected{% endif %}>En Yeni</option>
+                                <option value="created_at" {% if secili_sirala == 'created_at' %}selected{% endif %}>En Eski</option>
+                                <option value="name" {% if secili_sirala == 'name' %}selected{% endif %}>İsim (A-Z)</option>
+                                <option value="-name" {% if secili_sirala == '-name' %}selected{% endif %}>İsim (Z-A)</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="submit" class="btn">Filtrele</button>
+                            <a href="{% url 'product_list' %}" class="btn btn-secondary">Temizle</a>
+                        </div>
+                    </form>
+                </details>
+
+                <div>
+                    <div class="products-toolbar">
+                        <span class="products-count">{{ urunler|length }} ürün bulundu</span>
+                    </div>
+
+                    <div class="product-grid">
+                        {% for urun in urunler %}
+                        <a class="product-card" href="{% url 'product_detail' urun.slug %}">
+                            <div class="product-thumb">
+                                {% if urun.kapak_gorseli %}
+                                <img src="{{ urun.kapak_gorseli.url }}" alt="{{ urun.name }}">
+                                {% else %}
+                                <span class="placeholder">Görsel yok</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-body">
+                                {% if urun.category %}<span class="sku-tag">{{ urun.category.name }}</span>{% endif %}
+                                <h3>{{ urun.name }}</h3>
+                                {% if urun.product_type == 'sabit' %}
+                                <p class="product-meta">Sabit Fiyat</p>
+                                {% else %}
+                                <div class="badge-row">
+                                    <span class="badge badge-gold">{{ urun.get_purity_display }}</span>
+                                    <span class="badge">{{ urun.weight_gram }} gr</span>
+                                    {% if urun.stone_type != 'tassiz' %}<span class="badge">{{ urun.get_stone_type_display }}</span>{% endif %}
+                                </div>
+                                {% endif %}
+                                <p class="product-price">{{ urun.hesapla_fiyat }} TL</p>
+                                {% if urun.sku %}<span class="sku-tag">SKU: {{ urun.sku }}</span>{% endif %}
+                            </div>
+                        </a>
+                        {% empty %}
+                        <p class="empty-note">Bu filtrelere uyan ürün bulunamadı.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

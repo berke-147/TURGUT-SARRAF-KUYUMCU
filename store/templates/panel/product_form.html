@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ baslik }} - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container" style="max-width: 720px;">
+            <div class="section-title">
+                <h2>{{ baslik }}</h2>
+            </div>
+
+            <div class="converter-box">
+                <form method="post" enctype="multipart/form-data" id="urun-form">
+                    {% csrf_token %}
+
+                    <div class="panel-field">
+                        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<p class="alert alert-error">{{ form.name.errors|striptags }}</p>{% endif %}
+                    </div>
+
+                    <div class="panel-field">
+                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="two-col-grid">
+                        <div class="panel-field">
+                            <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="panel-field">
+                            <label for="{{ form.sku.id_for_label }}">{{ form.sku.label }}</label>
+                            {{ form.sku }}
+                        </div>
+                    </div>
+
+                    <div class="panel-field">
+                        <label for="{{ form.stone_type.id_for_label }}">{{ form.stone_type.label }}</label>
+                        {{ form.stone_type }}
+                    </div>
+
+                    <div class="panel-field">
+                        <label for="{{ form.product_type.id_for_label }}">{{ form.product_type.label }}</label>
+                        {{ form.product_type }}
+                        <p class="empty-note">Ürün tipine göre aşağıda ilgili bölümü doldur, diğerini boş bırakabilirsin.</p>
+                    </div>
+
+                    <div id="bolum-iscilikli" class="panel-subsection">
+                        <h4>İşçilikli Ürün Bilgileri (Altın)</h4>
+
+                        <div class="panel-field">
+                            <label for="{{ form.weight_gram.id_for_label }}">{{ form.weight_gram.label }}</label>
+                            {{ form.weight_gram }}
+                            {% if form.weight_gram.errors %}<p class="alert alert-error">{{ form.weight_gram.errors|striptags }}</p>{% endif %}
+                        </div>
+
+                        <div class="panel-field">
+                            <label for="{{ form.purity.id_for_label }}">{{ form.purity.label }}</label>
+                            {{ form.purity }}
+                            {% if form.purity.errors %}<p class="alert alert-error">{{ form.purity.errors|striptags }}</p>{% endif %}
+                        </div>
+
+                        <div class="panel-field">
+                            <label for="{{ form.labor_cost.id_for_label }}">{{ form.labor_cost.label }}</label>
+                            {{ form.labor_cost }}
+                            <p class="empty-note">Ham maden maliyetinin üzerine sabit TL olarak eklenir (yüzde değil).</p>
+                        </div>
+
+                        <div class="panel-field">
+                            <label for="{{ form.price_multiplier.id_for_label }}">{{ form.price_multiplier.label }}</label>
+                            {{ form.price_multiplier }}
+                            <p class="empty-note">Fiyat = (Has Altın Kuru x Milyem x Gram + İşçilik) x bu çarpan. 1 = ek kar yok. Fiyat, güncel HAS altın kuruna göre otomatik hesaplanır ve kur değiştikçe canlı değişir.</p>
+                        </div>
+                    </div>
+
+                    <div id="bolum-sabit" class="panel-subsection">
+                        <h4>Sabit Fiyatlı Ürün Bilgileri (Saat, Aksesuar vb.)</h4>
+
+                        <div class="panel-field">
+                            <label for="{{ form.fixed_price.id_for_label }}">{{ form.fixed_price.label }}</label>
+                            {{ form.fixed_price }}
+                            {% if form.fixed_price.errors %}<p class="alert alert-error">{{ form.fixed_price.errors|striptags }}</p>{% endif %}
+                            <p class="empty-note">Bu fiyat sabittir, altın kuru değişse de değişmez — güncellemek istediğinde elle değiştirmen gerekir.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-subsection">
+                        <h4>Renk / Ölçü Varyasyonu (opsiyonel)</h4>
+                        <p class="empty-note">Bu ürün için renk/ölçü seçeneği yoksa boş bırak - sitede o alan hiç görünmez.</p>
+
+                        <div class="panel-field">
+                            <label>{{ form.renkler.label }}</label>
+                            <div class="checkbox-row">
+                                {% for kutu in form.renkler %}
+                                <label>{{ kutu.tag }} {{ kutu.choice_label }}</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="panel-field">
+                            <label for="{{ form.olculer.id_for_label }}">{{ form.olculer.label }}</label>
+                            {{ form.olculer }}
+                            <p class="empty-note">{{ form.olculer.help_text }}</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-subsection">
+                        <h4>Ürün Görselleri</h4>
+
+                        {% if gorseller %}
+                        <p class="empty-note">Sürükleyerek sırasını değiştirebilir, çöp kutusuyla silebilirsin.</p>
+                        <div class="gallery-manager" id="gallery-manager" data-reorder-url="{% url 'panel_product_image_reorder' urun.pk %}">
+                            {% for gorsel in gorseller %}
+                            <div class="gallery-manager-item" draggable="true" data-id="{{ gorsel.pk }}">
+                                <img src="{{ gorsel.image.url }}" alt="">
+                                <span class="gm-order">{{ forloop.counter }}</span>
+                                <button type="button" class="gm-delete" data-delete-url="{% url 'panel_product_image_delete' gorsel.pk %}" onclick="turgutGorselSil(this)">&times;</button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <label for="id-yeni-gorseller" class="image-drop-zone" id="drop-zone">
+                            <p><strong>Görsel eklemek için tıkla</strong> ya da dosyaları buraya sürükle-bırak.<br>Birden fazla görsel seçebilirsin.</p>
+                        </label>
+                        <input type="file" name="images" id="id-yeni-gorseller" multiple accept="image/*" style="display:none;">
+                        <div id="yeni-gorsel-onizleme" class="gallery-manager"></div>
+                    </div>
+
+                    <div class="panel-field">
+                        <label>{{ form.is_active }} {{ form.is_active.label }}</label>
+                    </div>
+
+                    <div class="panel-actions">
+                        <button type="submit" class="btn">Kaydet</button>
+                        <a href="{% url 'panel_product_list' %}" class="btn btn-secondary">Vazgeç</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tipSecim = document.getElementById('{{ form.product_type.id_for_label }}');
+    var bolumIscilikli = document.getElementById('bolum-iscilikli');
+    var bolumSabit = document.getElementById('bolum-sabit');
+
+    function bolumleriGuncelle() {
+        if (!tipSecim) return;
+        if (tipSecim.value === 'sabit') {
+            bolumIscilikli.style.display = 'none';
+            bolumSabit.style.display = 'block';
+        } else {
+            bolumIscilikli.style.display = 'block';
+            bolumSabit.style.display = 'none';
+        }
+    }
+
+    if (tipSecim) {
+        tipSecim.addEventListener('change', bolumleriGuncelle);
+        bolumleriGuncelle();
+    }
+
+    // ---- Sürükle-bırak yeni görsel yükleme ----
+    var dropZone = document.getElementById('drop-zone');
+    var dosyaInput = document.getElementById('id-yeni-gorseller');
+    var onizlemeAlani = document.getElementById('yeni-gorsel-onizleme');
+
+    function onizlemeGuncelle() {
+        onizlemeAlani.innerHTML = '';
+        if (!dosyaInput.files) return;
+        Array.from(dosyaInput.files).forEach(function (dosya) {
+            var okuyucu = new FileReader();
+            okuyucu.onload = function (e) {
+                var kutu = document.createElement('div');
+                kutu.className = 'gallery-manager-item';
+                kutu.innerHTML = '<img src="' + e.target.result + '" alt="">';
+                onizlemeAlani.appendChild(kutu);
+            };
+            okuyucu.readAsDataURL(dosya);
+        });
+    }
+
+    if (dosyaInput) {
+        dosyaInput.addEventListener('change', onizlemeGuncelle);
+    }
+
+    if (dropZone) {
+        ['dragenter', 'dragover'].forEach(function (evt) {
+            dropZone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+        });
+        ['dragleave', 'drop'].forEach(function (evt) {
+            dropZone.addEventListener(evt, function (e) {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+            });
+        });
+        dropZone.addEventListener('drop', function (e) {
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                dosyaInput.files = e.dataTransfer.files;
+                onizlemeGuncelle();
+            }
+        });
+    }
+
+    // ---- Mevcut galeri: sürükle-bırak sıralama ----
+    var galeriYoneticisi = document.getElementById('gallery-manager');
+    if (galeriYoneticisi) {
+        var suruklenen = null;
+
+        galeriYoneticisi.querySelectorAll('.gallery-manager-item').forEach(function (ogeler) {
+            ogeler.addEventListener('dragstart', function () {
+                suruklenen = ogeler;
+                ogeler.classList.add('dragging');
+            });
+            ogeler.addEventListener('dragend', function () {
+                ogeler.classList.remove('dragging');
+                turgutSiraKaydet();
+            });
+            ogeler.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                var digerleri = Array.from(galeriYoneticisi.querySelectorAll('.gallery-manager-item:not(.dragging)'));
+                var sonraki = digerleri.find(function (oge) {
+                    var kutu = oge.getBoundingClientRect();
+                    return e.clientX < kutu.left + kutu.width / 2;
+                });
+                if (sonraki) {
+                    galeriYoneticisi.insertBefore(suruklenen, sonraki);
+                } else {
+                    galeriYoneticisi.appendChild(suruklenen);
+                }
+            });
+        });
+
+        function turgutSiraKaydet() {
+            var siraListesi = Array.from(galeriYoneticisi.querySelectorAll('.gallery-manager-item')).map(function (o) {
+                return o.getAttribute('data-id');
+            });
+            galeriYoneticisi.querySelectorAll('.gm-order').forEach(function (etiket, i) {
+                etiket.textContent = i + 1;
+            });
+            fetch(galeriYoneticisi.getAttribute('data-reorder-url'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: JSON.stringify({ sira: siraListesi }),
+            });
+        }
+    }
+});
+
+function turgutGorselSil(btn) {
+    if (!confirm('Bu görseli silmek istediğine emin misin?')) return;
+    var url = btn.getAttribute('data-delete-url');
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    }).then(function (r) {
+        if (r.ok) {
+            btn.closest('.gallery-manager-item').remove();
+        }
+    });
+}
+</script>
+{% endblock %}

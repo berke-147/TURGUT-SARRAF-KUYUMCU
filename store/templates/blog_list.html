@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog | Turgut Sarraf{% endblock %}
+{% block meta_description %}Altın takı bakımı, ayar rehberi ve stil önerileri - Turgut Sarraf blog.{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> / Blog
+            </div>
+            <span class="eyebrow">Rehber &amp; Bakım</span>
+            <h1>Blog</h1>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+
+            <div class="news-grid">
+                {% for yazi in yazilar %}
+                <a class="news-card" href="{% url 'blog_detail' yazi.slug %}">
+                    {% if yazi.cover_image %}
+                    <div class="news-thumb">
+                        <img src="{{ yazi.cover_image.url }}" alt="{{ yazi.title }}">
+                    </div>
+                    {% endif %}
+                    <div class="news-body">
+                        <h3>{{ yazi.title }}</h3>
+                        <p class="news-excerpt">{{ yazi.ozet_goster }}</p>
+                        <span class="news-date">{{ yazi.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="empty-note">Henüz blog yazısı eklenmedi.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

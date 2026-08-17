@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}İletişim & Mağaza | Turgut Sarraf{% endblock %}
+{% block meta_description %}Turgut Sarraf Kuyumculuk mağaza adresi, telefon, çalışma saatleri ve WhatsApp iletişim bilgileri. Bize ulaşın.{% endblock %}
+
+{% block content %}
+
+    <div class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="{% url 'home' %}">Ana Sayfa</a> / İletişim &amp; Mağaza
+            </div>
+            <span class="eyebrow">Bize Ulaşın</span>
+            <h1>İletişim &amp; Mağaza</h1>
+        </div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+
+            {% if gonderildi %}
+            <div class="alert alert-success">Mesajınız alındı, en kısa sürede size dönüş yapacağız.</div>
+            {% endif %}
+
+            <div class="contact-layout">
+                <div>
+                    <div class="contact-info-box">
+                        <h3>Mağaza Bilgileri</h3>
+
+                        {% if business_street_address %}
+                        <div class="contact-info-row">
+                            <div>
+                                <strong>Adres</strong>
+                                <a href="{{ business_maps_url }}" target="_blank" rel="noopener">
+                                    {{ business_street_address }}{% if business_city %}, {{ business_city }}{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if business_phone %}
+                        <div class="contact-info-row">
+                            <div>
+                                <strong>Telefon</strong>
+                                <a href="tel:{{ business_phone }}">{{ business_phone }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if whatsapp_number %}
+                        <div class="contact-info-row">
+                            <div>
+                                <strong>WhatsApp</strong>
+                                <a href="{% url 'whatsapp_redirect' %}?kaynak=iletisim">Hemen yazın &rarr;</a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="contact-info-row">
+                            <div>
+                                <strong>Çalışma Saatleri</strong>
+                                <table class="hours-table">
+                                    <tr><td>Pazartesi – Cumartesi</td><td>09:00 – 19:00</td></tr>
+                                    <tr><td>Pazar</td><td>Kapalı</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if business_latitude and business_longitude %}
+                    <iframe
+                        class="contact-map-frame"
+                        style="margin-top: 20px;"
+                        loading="lazy"
+                        allowfullscreen
+                        referrerpolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps?q={{ business_latitude }},{{ business_longitude }}&output=embed">
+                    </iframe>
+                    {% endif %}
+                </div>
+
+                <div class="converter-box">
+                    <h3 style="margin-bottom: 16px;">Bize Yazın</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="panel-field">
+                            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}<p class="alert alert-error">{{ form.name.errors|striptags }}</p>{% endif %}
+                        </div>
+                        <div class="panel-field">
+                            <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="panel-field">
+                            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="panel-field">
+                            <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+                            {{ form.message }}
+                            {% if form.message.errors %}<p class="alert alert-error">{{ form.message.errors|striptags }}</p>{% endif %}
+                        </div>
+                        <button type="submit" class="btn">Gönder</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}

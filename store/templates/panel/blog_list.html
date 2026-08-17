@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog Yönetimi - Panel{% endblock %}
+
+{% block content %}
+
+    <section class="section">
+        <div class="container">
+            <div class="panel-header-row">
+                <h2>Blog Yazıları</h2>
+                <a href="{% url 'panel_blog_create' %}" class="btn">+ Yeni Yazı</a>
+            </div>
+
+            <table class="panel-table">
+                <thead>
+                    <tr>
+                        <th>Başlık</th>
+                        <th>Sıra</th>
+                        <th>Tarih</th>
+                        <th>Yayında mı</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for yazi in yazilar %}
+                    <tr>
+                        <td>{{ yazi.title }}</td>
+                        <td>{{ yazi.display_order }}</td>
+                        <td>{{ yazi.created_at|date:"d.m.Y" }}</td>
+                        <td>{% if yazi.is_published %}Evet{% else %}Hayır{% endif %}</td>
+                        <td class="row-actions">
+                            <a href="{% url 'panel_blog_edit' yazi.pk %}">Düzenle</a>
+                            <a href="{% url 'panel_blog_delete' yazi.pk %}">Sil</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">Henüz blog yazısı eklenmedi.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <p style="margin-top: 18px;"><a href="{% url 'panel_dashboard' %}">&larr; Panele dön</a></p>
+        </div>
+    </section>
+
+{% endblock %}
