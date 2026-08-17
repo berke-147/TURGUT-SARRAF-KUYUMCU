@@ -8,6 +8,11 @@
     <meta name="description" content="{% block meta_description %}Turgut Sarraf Kuyumculuk'ta güncel altın, gümüş fiyatları anlık takip edilir; çeyrek, yarım, tam altın ve özel tasarım kuyum ürünleri.{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ site_domain }}{{ request.path }}{% endblock %}">
 
+    <!-- Marka logosu (TS monogramı) - favicon ve sosyal paylaşım kapak görseli -->
+    <link rel="icon" type="image/png" sizes="64x64" href="{% static 'img/favicon-64.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+
     {% if google_site_verification %}
     <meta name="google-site-verification" content="{{ google_site_verification }}">
     {% endif %}
@@ -18,7 +23,9 @@
     <meta property="og:title" content="{% block og_title %}{{ business_name|default:'Turgut Sarraf Kuyumculuk' }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}Güncel altın ve gümüş fiyatları, özel tasarım kuyum ürünleri.{% endblock %}">
     <meta property="og:url" content="{{ site_domain }}{{ request.path }}">
-    {% block og_image %}{% endblock %}
+    {% block og_image %}
+    <meta property="og:image" content="{{ site_domain }}{% static 'img/og-default.jpg' %}">
+    {% endblock %}
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}{{ business_name|default:'Turgut Sarraf Kuyumculuk' }}{% endblock %}">
@@ -76,7 +83,7 @@
     <header class="site-header">
         <div class="container">
             <a href="{% url 'home' %}" class="brand">
-                <span class="brand-mark">T</span>
+                <img src="{% static 'img/logo-dark.png' %}" alt="Turgut Sarraf" class="brand-mark">
                 Turgut Sarraf
             </a>
             <nav class="main-nav" id="main-nav">
@@ -106,7 +113,8 @@
 
     <footer class="site-footer">
         <div class="container">
-            <div class="footer-col">
+            <div class="footer-col footer-brand">
+                <img src="{% static 'img/logo-dark.png' %}" alt="Turgut Sarraf" class="footer-logo">
                 <h4>Turgut Sarraf</h4>
                 <p class="footer-slogan">Gücü Yansıtan Altın, Güveni Veren İsimdir.</p>
             </div>
