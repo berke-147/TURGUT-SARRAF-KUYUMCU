@@ -11,23 +11,25 @@
    değiştirmeye gerek kalmadan tüm site yeni palete geçti.
    =========================================================== */
 :root {
-  /* Marka logosundaki (TS monogramı) gerçek renkler: sıcak bronz altın ve
-     lacivert değil, nötr/sıcak bir antrasit-siyah. Logo ile bire bir
-     uyumlu olsun diye paletin tamamı buna göre ayarlandı - "modern ama
-     geleneksel izler taşıyan" görünüm için gerekli tek değişiklik bu. */
-  --gold: #a3814a;
-  --gold-light: #cdb182;
-  --gold-deep: #7c5f34;
-  --navy: #211e1a;
-  --navy-soft: #322e28;
-  --dark: #211e1a;       /* eski isim korunuyor, artık antrasit */
-  --dark-soft: #322e28;  /* eski isim korunuyor, artık antrasit */
-  --cream: #faf7f0;
-  --ivory: #f3ecdb;
-  --text-muted: #6b6656;
-  --border: #e5ddc8;
+  /* "Modern iskelet, asırlık ruh" paleti. Logodaki bronz altın korunuyor
+     ama zemin, "saman kağıdı" solgunluğundan çıkarılıp eski kuyumcu
+     dükkanlarının sıcak fildişi/espresso dünyasına çekildi: daha koyu ve
+     zengin bir espresso-siyah, daha tok bir eskitilmiş altın ve vurgu
+     için yakutu andıran derin bir bordo. */
+  --gold: #9c7c3c;
+  --gold-light: #d6ba85;
+  --gold-deep: #7a5f2c;
+  --navy: #1b1610;
+  --navy-soft: #272017;
+  --dark: #1b1610;       /* eski isim korunuyor, artık espresso */
+  --dark-soft: #272017;  /* eski isim korunuyor, artık espresso */
+  --cream: #f6f1e6;
+  --ivory: #eee6d3;
+  --burgundy: #6e1b28;   /* yakut/bordo vurgu - eyebrow ve ince detaylar */
+  --text-muted: #6b6353;
+  --border: #ddd2ba;
   --radius: 10px;
-  --shadow: 0 8px 24px rgba(33, 30, 26, 0.08);
+  --shadow: 0 8px 24px rgba(27, 22, 16, 0.08);
   --trust-green: #2f6b4f;
 }
 
@@ -54,10 +56,13 @@ body {
 }
 
 h1, h2, h3, h4 {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-weight: 500;
+  /* Cormorant Garamond: 16. yüzyıl Fransız matbaacılığından (Claude
+     Garamond) gelen klasik harf formları - "asırlık ruh"un tipografik
+     temeli. Büyük boyutlarda kullanılıp modern boşluklarla dengeleniyor. */
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-weight: 600;
   margin: 0 0 .5rem;
-  letter-spacing: .3px;
+  letter-spacing: .2px;
   color: var(--navy);
 }
 
@@ -96,6 +101,8 @@ h1, h2, h3, h4 {
    =========================================================== */
 :root {
   --motif-flourish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 24'%3E%3Cline x1='0' y1='12' x2='90' y2='12' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M114 3 L117 9C122 9 124 13 122 17C120 20 116 20 115 18C114 20 110 20 108 17C106 13 108 9 113 9Z' fill='%23000'/%3E%3C/svg%3E");
+  /* Ortalanmış kompozisyonlar için simetrik varyant: çizgi - lale - çizgi */
+  --motif-flourish-center: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 24'%3E%3Cline x1='0' y1='12' x2='68' y2='12' stroke='%23000' stroke-width='1.4'/%3E%3Cline x1='112' y1='12' x2='180' y2='12' stroke='%23000' stroke-width='1.4'/%3E%3Cpath d='M90 3 L93 9C98 9 100 13 98 17C96 20 92 20 91 18C90 20 86 20 84 17C82 13 84 9 89 9Z' fill='%23000'/%3E%3C/svg%3E");
 }
 
 .page-header h1::after,
@@ -116,7 +123,12 @@ h1, h2, h3, h4 {
 }
 
 .page-header h1::after {
-  margin: 16px 0 0;
+  width: 180px;
+  margin: 16px auto 0;
+  -webkit-mask-image: var(--motif-flourish-center);
+  mask-image: var(--motif-flourish-center);
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
 .section-title h2::after {
@@ -137,11 +149,11 @@ h1, h2, h3, h4 {
 
 .eyebrow {
   display: block;
-  font-size: .74rem;
+  font-size: .72rem;
   font-weight: 700;
-  letter-spacing: 2.2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--burgundy);
   margin-bottom: 6px;
 }
 
@@ -162,15 +174,53 @@ img {
   padding: 0 24px;
 }
 
-/* ---------- Header ---------- */
-.site-header {
+/* ---------- Topbar (üst şerit) ---------- */
+.topbar {
   background: var(--navy);
+  color: var(--gold-light);
+  font-size: .74rem;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.topbar .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  gap: 12px;
+}
+
+.topbar-slogan {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: .6px;
+  font-size: .9rem;
+}
+
+.topbar-phone {
   color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.topbar-phone:hover {
+  color: var(--gold-light);
+}
+
+/* ---------- Header ----------
+   Açık (fildişi) zemin + koyu yazı: eski kuyumcu dükkanlarının aydınlık
+   vitrini. Alt kenarda çift çizgi (double border) - klasik gravür
+   çerçevelerinin en sade izi. Modern: sticky, ince, az kalabalık. */
+.site-header {
+  background: var(--cream);
+  color: var(--navy);
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 2px 14px rgba(0,0,0,.2);
-  border-bottom: 1px solid rgba(163, 129, 74, .35);
+  box-shadow: 0 2px 18px rgba(27, 22, 16, .07);
+  border-bottom: 3px double var(--gold);
 }
 
 .site-header .container {
@@ -184,20 +234,36 @@ img {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.5rem;
+  gap: 14px;
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: 1.6rem;
   font-weight: 700;
   letter-spacing: .5px;
-  color: #fff;
+  color: var(--navy);
 }
 
-/* Gerçek marka logosu (TS monogramı, şeffaf PNG) - koyu header zemininde
-   okunsun diye "dark" varyantı (altın T + fildişi S) kullanılıyor. */
+/* Gerçek marka logosu (TS monogramı, şeffaf PNG) - açık header zemininde
+   "light" varyantı (altın T + koyu S) kullanılıyor. */
 .brand .brand-mark {
-  height: 40px;
+  height: 44px;
   width: auto;
   display: block;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.brand-text small {
+  font-family: 'Inter', sans-serif;
+  font-size: .58rem;
+  font-weight: 600;
+  letter-spacing: 3.2px;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-top: 3px;
 }
 
 .main-nav {
@@ -206,18 +272,18 @@ img {
 }
 
 .main-nav a {
-  font-size: .82rem;
+  font-size: .8rem;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: #d9d2bc;
+  color: var(--navy);
   padding: 6px 2px;
   border-bottom: 2px solid transparent;
   transition: border-color .2s, color .2s;
 }
 
 .main-nav a:hover {
-  color: var(--gold-light);
+  color: var(--gold-deep);
   border-color: var(--gold);
 }
 
@@ -230,7 +296,7 @@ img {
   width: 40px;
   height: 40px;
   background: transparent;
-  border: 1px solid rgba(255,255,255,.25);
+  border: 1px solid rgba(27, 22, 16, .25);
   border-radius: 8px;
   cursor: pointer;
 }
@@ -240,7 +306,7 @@ img {
   width: 18px;
   height: 2px;
   margin: 0 auto;
-  background: var(--gold-light);
+  background: var(--navy);
   transition: transform .2s, opacity .2s;
 }
 
@@ -581,7 +647,7 @@ img {
 }
 
 .section-title h2 {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   position: relative;
   padding-bottom: 4px;
 }
@@ -639,18 +705,23 @@ img {
   gap: 18px;
 }
 
+/* Gravür çerçevesi: dış ince çizgi + içte 3px boşluklu ikinci çizgi.
+   Eski sarraf makbuzlarının/senetlerinin çift çerçeveli kenarı. */
 .rate-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-top: 2px solid var(--gold);
-  border-radius: 2px;
-  padding: 20px;
+  background: #fdfaf3;
+  border: 1px solid var(--gold);
+  outline: 1px solid rgba(156, 124, 60, .35);
+  outline-offset: 3px;
+  border-radius: 0;
+  padding: 22px 20px;
+  margin: 4px;
   text-align: center;
-  transition: border-color .2s;
+  transition: outline-color .2s, box-shadow .2s;
 }
 
 .rate-card:hover {
-  border-color: var(--gold);
+  outline-color: var(--gold);
+  box-shadow: 0 6px 18px rgba(27, 22, 16, .08);
 }
 
 .rate-card h3 {
@@ -662,9 +733,9 @@ img {
 }
 
 .rate-card .price {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.9rem;
-  color: var(--gold);
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: 2.1rem;
+  color: var(--navy);
   font-weight: 700;
   margin: 6px 0 4px;
 }
@@ -915,9 +986,14 @@ img {
    ve sakin dururlar. Lacivert burada sadece breadcrumb metninde ve ince
    çizgide - hakim renk değil, aksan.
    =========================================================== */
+/* Sayfa başlığı: ortalanmış klasik kompozisyon - kitap kapağı / ferman
+   başlığı düzeni. Motif (lale flourish) başlığın altında ortada durur. */
 .page-header {
-  padding: 64px 0 40px;
+  padding: 60px 0 44px;
   border-bottom: 1px solid var(--border);
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(156,124,60,.07), transparent 60%);
 }
 
 .page-header .breadcrumb {
@@ -938,10 +1014,15 @@ img {
 }
 
 .page-header h1 {
-  font-weight: 400;
-  font-size: clamp(1.9rem, 3.6vw, 2.7rem);
+  font-weight: 600;
+  font-size: clamp(2.2rem, 4.2vw, 3.2rem);
   letter-spacing: .3px;
   margin: 10px 0 0;
+}
+
+.page-header-sub {
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .page-header-sub {
@@ -964,15 +1045,18 @@ img {
   }
 }
 
+/* Modern buton: dolu espresso zemin, keskin köşe, net letterspacing.
+   Hover'da eskitilmiş altına döner - iki kimliğin (modern yapı +
+   geleneksel malzeme) tek bileşende buluşması. */
 .btn {
   display: inline-block;
-  background: transparent;
-  color: var(--navy);
-  padding: 13px 30px;
-  border-radius: 2px;
+  background: var(--navy);
+  color: var(--cream);
+  padding: 14px 32px;
+  border-radius: 0;
   font-weight: 600;
-  font-size: .8rem;
-  letter-spacing: 1.4px;
+  font-size: .78rem;
+  letter-spacing: 2px;
   text-transform: uppercase;
   border: 1px solid var(--navy);
   cursor: pointer;
@@ -980,8 +1064,8 @@ img {
 }
 
 .btn:hover {
-  background: var(--navy);
-  border-color: var(--navy);
+  background: var(--gold);
+  border-color: var(--gold);
   color: #fff;
 }
 
@@ -989,22 +1073,26 @@ img {
    hikayesindeki kartlar) - lacivert çerçeve koyu zeminde kaybolur, bu
    yüzden beyaz çerçeveli bir varyant kullanılır. */
 .gj-card .btn {
+  background: transparent;
   border-color: rgba(255,255,255,.85);
   color: #fff;
 }
 
 .gj-card .btn:hover {
-  background: #fff;
-  border-color: #fff;
-  color: var(--navy);
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #fff;
 }
 
 /* ---------- Döviz / Altın Çevirici ---------- */
 .converter-box {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 2px;
+  background: #fdfaf3;
+  border: 1px solid var(--gold);
+  outline: 1px solid rgba(156, 124, 60, .35);
+  outline-offset: 3px;
+  border-radius: 0;
   padding: 28px;
+  margin: 4px;
 }
 
 .converter-row {
@@ -1467,7 +1555,7 @@ select.panel-input {
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--navy);
+    background: var(--cream);
     border-top: 1px solid rgba(163,129,74,.25);
     border-bottom: 1px solid rgba(163,129,74,.25);
     flex-direction: column;
@@ -1483,7 +1571,7 @@ select.panel-input {
 
   .main-nav a {
     padding: 14px 24px;
-    border-bottom: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(27, 22, 16, .08);
     width: 100%;
   }
 

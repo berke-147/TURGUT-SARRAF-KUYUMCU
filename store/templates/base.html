@@ -32,7 +32,7 @@
     <meta name="twitter:description" content="{% block twitter_description %}Güncel altın ve gümüş fiyatları, özel tasarım kuyum ürünleri.{% endblock %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <!-- Google'a işletme olarak tanınmak için (Google Business Profile ile birlikte kullanılır) -->
@@ -80,11 +80,25 @@
     </script>
     {% endif %}
 
+    <!-- Üst şerit: koyu zemin üzerine slogan + telefon. Modern sitelerin
+         "announcement bar"ı ile eski dükkan tabelasının buluşması. -->
+    <div class="topbar">
+        <div class="container">
+            <span class="topbar-slogan">Gücü Yansıtan Altın, Güveni Veren İsimdir</span>
+            {% if business_phone %}
+            <a href="tel:{{ business_phone }}" class="topbar-phone">{{ business_phone }}</a>
+            {% endif %}
+        </div>
+    </div>
+
     <header class="site-header">
         <div class="container">
             <a href="{% url 'home' %}" class="brand">
-                <img src="{% static 'img/logo-dark.png' %}" alt="Turgut Sarraf" class="brand-mark">
-                Turgut Sarraf
+                <img src="{% static 'img/logo-light.png' %}" alt="Turgut Sarraf" class="brand-mark">
+                <span class="brand-text">
+                    Turgut Sarraf
+                    <small>Kuyumculuk</small>
+                </span>
             </a>
             <nav class="main-nav" id="main-nav">
                 <a href="{% url 'home' %}">Ana Sayfa</a>
