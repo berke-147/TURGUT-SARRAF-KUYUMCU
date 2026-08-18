@@ -324,7 +324,7 @@ img {
    =========================================================== */
 .gold-journey {
   position: relative;
-  height: 280vh;
+  height: 340vh; /* 3 hikaye kartı - her birine rahat bir okuma alanı */
   background: var(--navy);
 }
 
@@ -349,15 +349,10 @@ img {
   filter: drop-shadow(0 12px 32px rgba(0,0,0,.35));
 }
 
-/* Yakut grubu JS tarafından en başta opacity + scale ile "belirtiliyor";
-   fill-box + merkez orijin sayesinde kendi merkezinde büyür/küçülür.
-   Yapraklar (.gj-petal) ve asma halkası (.gj-bail) İSE bilerek fill-box
-   KULLANMAZ - varsayılan orijin (0,0), çiçek merkezinde/halka konumunda
-   kalır, böylece rotate()/scale() doğru noktadan döner. */
-.gj-gem-group {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-}
+/* Döküm sahnesindeki tüm hareketler JS'te SVG "transform" ATTRIBUTE'u ile
+   yapılır (CSS transform değil) - böylece dönme/ölçek merkezleri SVG
+   koordinatlarıyla (ör. rotate(-9 200 92)) tam kontrol edilir ve
+   transform-box/transform-origin uyumsuzlukları hiç yaşanmaz. */
 
 .gold-journey-overlay {
   position: absolute;
@@ -493,7 +488,7 @@ img {
 }
 
 @media (max-width: 720px) {
-  .gold-journey { height: 240vh; }
+  .gold-journey { height: 300vh; }
   .gj-card { width: 88vw; text-align: center; left: 50%; }
   .gold-journey-track { bottom: 15%; }
 }

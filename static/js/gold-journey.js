@@ -1,16 +1,19 @@
 /*
- * Ana sayfa: "Yakuttan Broşa" - basit SVG zeminli, iki aşamalı hikaye.
+ * Ana sayfa: "Erimiş Altın Dökümü" - basit SVG zeminli, üç aşamalı hikaye.
  *
- * #gold-journey section'ı (280vh). İçindeki .gold-journey-sticky ekranda
- * sabit kalır. Arka planda TEK bir vektörel (SVG) sahne var: ortada yakut
- * SABİT duruyor (sadece en başta belirir), kaydırdıkça etrafındaki 16
- * papatya yaprağı (8 dış + 8 iç) TEKER TEKER, sırayla açılıyor, en son
- * tepede asma halkası (bail) belirip parçayı bir kolye pandantifine
- * dönüştürüyor. Foto/video değil - saf CSS/SVG transform animasyonu.
+ * #gold-journey section'ı. İçindeki .gold-journey-sticky ekranda sabit
+ * kalır. Arka planda TEK bir vektörel (SVG) sahne var ve scroll progress'e
+ * bağlı şu sırayla oynar:
+ *   1) Pota hafifçe eğilir, erimiş altın akmaya başlar (akış scale-y ile uzar)
+ *   2) Kalıp içindeki dolum (clip-path'li rect) yükselerek külçeyi doldurur,
+ *      kalıbın etrafında sıcak kor parıltısı belirir
+ *   3) Akış kesilir, dolum soğumuş altın rengine döner (crossfade), üzerinden
+ *      bir ışıltı süpürmesi geçer ve TS damgası belirir.
+ * Foto/video değil - saf SVG attribute/transform animasyonu.
  *
- * Hikaye 2 karttan oluşur (#gold-journey-rail > .gj-card): "Bir Yakut" ve
- * "Altın Bir Kolye". Her kart SADECE kendi 1 birimlik penceresinde yaşar;
- * komşu kartla sadece kısa bir geçiş payı (giriş/çıkış) paylaşır:
+ * Hikaye 3 karttan oluşur (#gold-journey-rail > .gj-card): "Saf Altın",
+ * "Ustanın Eli", "Güvenin Mührü". Her kart SADECE kendi 1 birimlik
+ * penceresinde yaşar; komşu kartla kısa bir geçiş payı paylaşır:
  *
  *   rel = globalX - kartIndex
  *   rel < -GIRIS_PAYI      : görünmez, ekranın solunda bekliyor
@@ -35,11 +38,14 @@
     var izNoktalari = Array.prototype.slice.call(sahne.querySelectorAll('.gj-track-dot'));
     var ipucu = document.getElementById('gold-journey-hint');
 
-    // SVG sahnesinin parçaları - ortadaki sabit yakut, teker teker açılan
-    // 16 yaprak (dış + iç sıra) ve en son beliren asma halkası (bail).
-    var gemGrubu = sahne.querySelector('.gj-gem-group');
-    var yapraklar = Array.prototype.slice.call(sahne.querySelectorAll('.gj-petal'));
-    var bail = sahne.querySelector('.gj-bail');
+    // SVG sahnesinin parçaları - döküm hikayesinin oyuncuları.
+    var pota = sahne.querySelector('.gd-pota');
+    var akis = sahne.querySelector('.gd-akis');
+    var dolum = sahne.querySelector('.gd-dolum');
+    var sogumus = sahne.querySelector('.gd-sogumus');
+    var parilti = sahne.querySelector('.gd-parilti');
+    var damga = sahne.querySelector('.gd-damga');
+    var kor = sahne.querySelector('.gd-kor');
 
     if (!sticky || !kartlar.length) return;
 
@@ -84,33 +90,6 @@
         };
     });
 
-    // Yaprakların açılma sırası ve zamanlaması, DOM sırasına göre (HTML'de
-    // önce 8 dış yaprak, sonra 8 iç yaprak yazılmış durumda) önceden
-    // hesaplanır - her karede yeniden hesaplamamak için. Yakut ilk %6'da,
-    // dış yapraklar %6-%62 arası sırayla, iç yapraklar %62-%94 arası
-    // sırayla, asma halkası en son %94-%100 arası belirir.
-    var YAPRAK_PENCERESI = (function () {
-        var pencereler = [];
-        yapraklar.forEach(function (yaprak, i) {
-            var baslangic, aralik;
-            if (i < 8) {
-                baslangic = 0.06 + i * 0.07;
-                aralik = 0.10;
-            } else {
-                var k = i - 8;
-                baslangic = 0.62 + k * 0.04;
-                aralik = 0.06;
-            }
-            pencereler.push({
-                aci: parseFloat(yaprak.dataset.angle) || 0,
-                olcek: parseFloat(yaprak.dataset.scale) || 1,
-                baslangic: baslangic,
-                aralik: aralik
-            });
-        });
-        return pencereler;
-    })();
-
     function metniYerlestir(el, t) {
         if (!el) return;
         el.style.opacity = t.toFixed(2);
@@ -132,29 +111,60 @@
 
         var globalX = progress * TOPLAM_ASAMA; // 0 .. TOPLAM_ASAMA arası "sahne birimi"
 
-        // 1) Yakut -> Broş SVG sahnesi. Yakut ortada sabit duruyor, sadece
-        // en başta hafifçe belirip yerine oturuyor. Ardından 16 yaprak
-        // teker teker (önce dış sıra, sonra iç sıra) açılıyor, en son
-        // asma halkası beliriyor.
-        if (gemGrubu) {
-            var gt = yumusat(evreT(progress, 0, 0.06));
-            gemGrubu.style.opacity = gt.toFixed(2);
-            gemGrubu.style.transform = 'scale(' + (0.4 + gt * 0.6).toFixed(3) + ')';
+        // 1) Döküm sahnesi zaman çizelgesi (progress 0 -> 1):
+        //    %0-10   pota eğilir
+        //    %8-16   akış uzayarak kalıba ulaşır
+        //    %16-64  kalıp dolar (kor parıltısı dolumla birlikte artar)
+        //    %62-72  akış kesilir, pota doğrulur
+        //    %70-84  altın soğur (sıcak turuncudan eskitilmiş altına crossfade)
+        //    %84-94  ışıltı süpürmesi külçenin üzerinden geçer
+        //    %90-100 TS damgası belirir
+        var potaT = yumusat(evreT(progress, 0, 0.10)) - yumusat(evreT(progress, 0.64, 0.08));
+        if (pota) {
+            var aci = (-9 * sinirla(potaT, 0, 1)).toFixed(2);
+            pota.setAttribute('transform', 'rotate(' + aci + ' 200 92)');
         }
 
-        yapraklar.forEach(function (yaprak, i) {
-            var p = YAPRAK_PENCERESI[i];
-            var t = yumusat(evreT(progress, p.baslangic, p.aralik));
-            var girisAcisi = p.aci - (1 - t) * 18; // hafifçe dönerek yerine oturur
-            var olcek = p.olcek * (0.35 + t * 0.65);
-            yaprak.style.opacity = t.toFixed(2);
-            yaprak.style.transform = 'rotate(' + girisAcisi.toFixed(1) + 'deg) scale(' + olcek.toFixed(3) + ')';
-        });
+        var akisT = yumusat(evreT(progress, 0.08, 0.08)) - yumusat(evreT(progress, 0.62, 0.08));
+        akisT = sinirla(akisT, 0, 1);
+        if (akis) {
+            akis.setAttribute('transform', 'scale(1 ' + akisT.toFixed(3) + ')');
+            akis.setAttribute('opacity', akisT.toFixed(2));
+        }
 
-        if (bail) {
-            var bt = yumusat(evreT(progress, 0.94, 0.06));
-            bail.style.opacity = bt.toFixed(2);
-            bail.style.transform = 'scale(' + (0.5 + bt * 0.5).toFixed(3) + ')';
+        var dolumT = yumusat(evreT(progress, 0.16, 0.48));
+        if (dolum) {
+            // Kalıp içi y=302..366 arası (64 birim) - dolum alttan yükselir.
+            var yukseklik = 64 * dolumT;
+            dolum.setAttribute('y', (366 - yukseklik).toFixed(1));
+            dolum.setAttribute('height', yukseklik.toFixed(1));
+        }
+
+        var sogumaT = yumusat(evreT(progress, 0.70, 0.14));
+        if (sogumus) {
+            sogumus.setAttribute('opacity', sogumaT.toFixed(2));
+        }
+
+        if (kor) {
+            // Kor, dolum sürerken parlar; altın soğudukça söner.
+            var korOpaklik = sinirla(dolumT * (1 - sogumaT), 0, 1) * 0.9;
+            kor.setAttribute('opacity', korOpaklik.toFixed(2));
+        }
+
+        if (parilti) {
+            // Işıltı bandı külçenin solundan girip sağından çıkar (clip
+            // sayesinde sadece külçe yüzeyinde görünür).
+            var suprulmeT = evreT(progress, 0.84, 0.10);
+            var x = -80 + 360 * yumusat(suprulmeT);
+            parilti.setAttribute('transform', 'translate(' + x.toFixed(1) + ' 0)');
+        }
+
+        if (damga) {
+            var damgaT = yumusat(evreT(progress, 0.90, 0.10));
+            damga.setAttribute('opacity', damgaT.toFixed(2));
+            var olcek = (0.7 + 0.3 * damgaT).toFixed(3);
+            damga.setAttribute('transform',
+                'translate(200 334) scale(' + olcek + ') translate(-200 -334)');
         }
 
         // 2) Kartlar: her biri SADECE kendi 1 birimlik penceresinde yaşar.
