@@ -11,6 +11,10 @@
 
             <div class="board-header">
                 <h1 class="board-title">TURGUT SARRAF</h1>
+                <button type="button" class="board-fs-btn" id="board-fs-btn" title="Tam ekran (dükkan ekranı modu)">
+                    <span class="fs-ac">⛶ Tam Ekran</span>
+                    <span class="fs-kapat">✕ Çık</span>
+                </button>
                 <div class="board-quickstats">
                     <span data-quick="HAS">HAS: <strong data-bf="qbuy">{% if has_veri %}{{ has_veri.buy_price|floatformat:2 }}{% else %}-{% endif %}</strong> / <strong data-bf="qsell">{% if has_veri %}{{ has_veri.sell_price|floatformat:2 }}{% else %}-{% endif %}</strong></span>
                     <span data-quick="ONSUSD">ONS/$: <strong data-bf="qbuy">{% if ons_usd_veri %}{{ ons_usd_veri.final_buy_price|floatformat:2 }}{% else %}-{% endif %}</strong> / <strong data-bf="qsell">{% if ons_usd_veri %}{{ ons_usd_veri.final_sell_price|floatformat:2 }}{% else %}-{% endif %}</strong></span>
@@ -43,7 +47,9 @@
                     </thead>
                     <tbody>
                         {% for veri in kalemler %}
-                        <tr class="board-row" data-code="{{ veri.code }}">
+                        <tr class="board-row" data-code="{{ veri.code }}"
+                            data-detay-url="{% url 'market_detail' veri.code %}"
+                            title="{{ veri.name }} grafiğini ve detayını aç">
                             <td class="board-name">{{ veri.name }}</td>
                             <td class="board-dir" data-bf="dir">–</td>
                             <td><span class="pill" data-bf="buy">{{ veri.final_buy_price|floatformat:0 }}</span></td>

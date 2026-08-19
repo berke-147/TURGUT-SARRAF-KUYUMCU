@@ -113,5 +113,49 @@
 
     refreshBoard();
     setInterval(refreshBoard, REFRESH_MS);
+
+    // --- Satıra tıklayınca o kalemin detay/grafik sayfası açılır ---
+    grid.querySelectorAll('.board-row[data-detay-url]').forEach(function (row) {
+      row.addEventListener('click', function () {
+        window.location.href = row.getAttribute('data-detay-url');
+      });
+    });
+
+    // --- Tam ekran (dükkan ekranı) modu ---
+    // Fullscreen API kullanılır: tarayıcı/ekran ölçüsü ne olursa olsun pano
+    // tüm ekranı kaplar; CSS tarafında .board-section:fullscreen kuralları
+    // yazı boyutlarını ekran genişliğine (vw) göre otomatik ölçekler -
+    // böylece "F11'de hesap tutmuyor" sorunu kökten çözülür.
+    var fsBtn = document.getElementById('board-fs-btn');
+    var boardSection = grid.closest('.board-section') || grid;
+
+    function fullscreenDestekli() {
+      return boardSection.requestFullscreen || boardSection.webkitRequestFullscreen;
+    }
+
+    function fullscreenAcik() {
+      return document.fullscreenElement || document.webkitFullscreenElement;
+    }
+
+    function fsDurumuGuncelle() {
+      var acik = !!fullscreenAcik();
+      boardSection.classList.toggle('is-fullscreen', acik);
+      document.body.classList.toggle('board-fs-active', acik);
+    }
+
+    if (fsBtn && fullscreenDestekli()) {
+      fsBtn.addEventListener('click', function () {
+        if (fullscreenAcik()) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        } else {
+          (boardSection.requestFullscreen || boardSection.webkitRequestFullscreen).call(boardSection);
+        }
+      });
+      document.addEventListener('fullscreenchange', fsDurumuGuncelle);
+      document.addEventListener('webkitfullscreenchange', fsDurumuGuncelle);
+    } else if (fsBtn) {
+      // Çok eski tarayici: butonu gizle, F11 hâlâ kullanılabilir.
+      fsBtn.style.display = 'none';
+    }
   });
 })();

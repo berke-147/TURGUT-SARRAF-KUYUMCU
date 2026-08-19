@@ -438,3 +438,31 @@ class WhatsAppClick(models.Model):
 
     def __str__(self):
         return f"{self.get_source_display()} - {self.created_at:%d.%m.%Y %H:%M}"
+
+
+# 6. FİYAT GEÇMİŞİ (grafik için)
+class RateSnapshot(models.Model):
+    """
+    Her kalemin HAM alış/satış fiyatının belirli aralıklarla alınmış
+    fotoğrafı. Kur robotu 3 saniyede bir güncellese de buraya EN FAZLA
+    5 dakikada bir satır yazılır (bkz. services.py -> _gecmisi_kaydet) -
+    yoksa veritabanı günde ~28 bin satırla şişerdi. 90 günden eski kayıtlar
+    otomatik silinir. Piyasa Durumu ürün detay sayfasındaki grafik bu
+    tablodan beslenir. HAM fiyat saklanır; grafikte gösterilirken o anki
+    çarpan uygulanır (böylece çarpan değişse bile geçmiş tutarlı kalır).
+    """
+    code = models.CharField(max_length=10, db_index=True, verbose_name="Kalem Kodu")
+    buy_price = models.DecimalField(max_digits=10, decimal_places=4, verbose_name="Ham Alış")
+    sell_price = models.DecimalField(max_digits=10, decimal_places=4, verbose_name="Ham Satış")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Zaman")
+
+    class Meta:
+        verbose_name = "Fiyat Geçmişi"
+        verbose_name_plural = "Fiyat Geçmişleri"
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['code', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.code} @ {self.created_at:%d.%m.%Y %H:%M} = {self.sell_price}"

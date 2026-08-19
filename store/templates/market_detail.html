@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ kalem.name }} Canlı Fiyat ve Grafik | Turgut Sarraf{% endblock %}
+{% block meta_description %}{{ kalem.name }} anlık alış/satış fiyatı, günlük değişim ve fiyat geçmişi grafiği - Turgut Sarraf canlı piyasa verileri.{% endblock %}
+
+{% block content %}
+
+    <section class="board-section">
+        <div class="price-board market-detail" id="market-detail"
+             data-code="{{ kalem.code }}"
+             data-rates-url="{% url 'rates_api' %}"
+             data-history-url="{% url 'rate_history_api' kalem.code %}">
+
+            <div class="detail-top">
+                <a href="{% url 'market' %}" class="detail-back">&larr; Piyasa Durumu</a>
+                <div class="board-meta" style="margin:0;">
+                    Son Güncelleme: <span id="detail-updated">--:--:--</span>
+                </div>
+            </div>
+
+            <h1 class="board-title detail-title">{{ kalem.name }}</h1>
+
+            <div class="detail-stats">
+                <div class="detail-stat">
+                    <span class="detail-stat-label">ALIŞ</span>
+                    <span class="detail-stat-value" id="detail-buy">{{ kalem.final_buy_price|floatformat:2 }}</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="detail-stat-label">SATIŞ</span>
+                    <span class="detail-stat-value" id="detail-sell">{{ kalem.final_sell_price|floatformat:2 }}</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="detail-stat-label">FARK</span>
+                    <span class="detail-stat-value detail-stat-small" id="detail-fark">{% if kalem.change_amount > 0 %}+{% endif %}{{ kalem.change_amount|floatformat:0 }}</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="detail-stat-label">DEĞİŞİM %</span>
+                    <span class="detail-stat-value detail-stat-small" id="detail-pct">{% if kalem.change_percent > 0 %}+{% endif %}{{ kalem.change_percent }}%</span>
+                </div>
+            </div>
+
+            <div class="detail-chart-box">
+                <div class="detail-chart-head">
+                    <span class="detail-chart-title">Fiyat Geçmişi (Satış)</span>
+                    <div class="detail-ranges" id="detail-ranges">
+                        <button type="button" data-gun="1">1 Gün</button>
+                        <button type="button" data-gun="7" class="is-active">1 Hafta</button>
+                        <button type="button" data-gun="14">2 Hafta</button>
+                        <button type="button" data-gun="30">1 Ay</button>
+                    </div>
+                </div>
+                <div class="detail-chart-wrap">
+                    <canvas id="detail-chart"></canvas>
+                    <p class="detail-chart-empty" id="detail-chart-empty" hidden>
+                        Bu aralık için henüz yeterli geçmiş verisi birikmedi.
+                        Sistem fiyatları düzenli aralıklarla kaydediyor; grafik
+                        kısa süre içinde burada dolmaya başlayacak.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="{% static 'js/market-detail.js' %}" defer></script>
+{% endblock %}

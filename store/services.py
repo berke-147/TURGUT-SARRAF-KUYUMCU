@@ -42,13 +42,48 @@ SEÇİME BAĞLI TAKİP (is_tracked):
    içinde) fiyatı çekilmeye başlar. Seçim kaldırılırsa (panelden silinirse)
    robot bir daha o kalemi hiç güncellemez.
 """
+import datetime
 import decimal
 import re
 
 import requests
 from django.utils import timezone
 
-from .models import FinancialData
+from .models import FinancialData, RateSnapshot
+
+# Fiyat geçmişi örnekleme aralığı: bir kalem için EN FAZLA bu sıklıkta
+# geçmiş satırı yazılır (robot 3 sn'de bir dönse bile). Grafik için 5 dk
+# çözünürlük fazlasıyla yeterli, veritabanı da şişmez.
+GECMIS_ARALIGI = datetime.timedelta(minutes=5)
+
+# Bu süreden eski geçmiş kayıtları otomatik silinir.
+GECMIS_SAKLAMA = datetime.timedelta(days=90)
+
+
+def _gecmisi_kaydet(code, buy_price, sell_price):
+    """
+    Kalemin fiyat geçmişine (grafik verisi) örnek yazar - ama son örnekten
+    bu yana GECMIS_ARALIGI geçmediyse hiçbir şey yapmaz. Arada bir de eski
+    kayıtları temizler. Hata olursa sessizce geçer: geçmiş kaydı, kur
+    güncellemesinin kendisini ASLA aksatmamalı.
+    """
+    try:
+        simdi = timezone.now()
+        son = (
+            RateSnapshot.objects.filter(code=code)
+            .values_list('created_at', flat=True)
+            .first()  # ordering = ['-created_at'] -> en yenisi
+        )
+        if son is not None and (simdi - son) < GECMIS_ARALIGI:
+            return
+
+        RateSnapshot.objects.create(code=code, buy_price=buy_price, sell_price=sell_price)
+
+        # Temizlik: eski kayıtları sil (her örnek yazımında çalışsa da
+        # 5 dakikada bir küçük bir delete sorgusudur, yük oluşturmaz).
+        RateSnapshot.objects.filter(created_at__lt=simdi - GECMIS_SAKLAMA).delete()
+    except Exception:
+        pass
 
 METAL_API_URL = "https://api.gold-api.com/price/{symbol}"
 FX_API_URL = "https://api.exchangerate-api.com/v4/latest/USD"
@@ -336,6 +371,9 @@ def upsert(code, name, sell_price, log, buy_price=None, default_multiplier=None)
         # yaz. Panelden bir değer girildikten sonra bir daha buradan değiştirilmez.
         obj.sell_multiplier = default_multiplier
         obj.save(update_fields=["sell_multiplier"])
+
+    # Grafik için fiyat geçmişi örneği (en fazla 5 dk'da bir yazılır).
+    _gecmisi_kaydet(code, buy_price, sell_price)
 
     durum = "oluşturuldu" if created else "güncellendi"
     log(f"  - {code} {durum}: {sell_price} TL")

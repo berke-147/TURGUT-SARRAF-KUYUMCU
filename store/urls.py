@@ -4,6 +4,7 @@ from . import panel_views
 
 urlpatterns = [
     path('piyasa-durumu/', views.market_page, name='market'),
+    path('piyasa-durumu/<str:code>/', views.market_detail, name='market_detail'),
     path('urunler/', views.product_list, name='product_list'),
     path('urunler/<slug:slug>/', views.product_detail, name='product_detail'),
     path('haberler/<slug:slug>/', views.news_detail, name='news_detail'),
@@ -13,6 +14,7 @@ urlpatterns = [
     path('iletisim/', views.contact_page, name='contact'),
     path('whatsapp/', views.whatsapp_redirect, name='whatsapp_redirect'),
     path('api/kurlar/', views.rates_api, name='rates_api'),
+    path('api/kurlar/<str:code>/gecmis/', views.rate_history_api, name='rate_history_api'),
 
     # ---- Dükkan sahibi paneli (ana menüde linki yok) ----
     path('panel/giris/', panel_views.PanelLoginView.as_view(), name='panel_login'),

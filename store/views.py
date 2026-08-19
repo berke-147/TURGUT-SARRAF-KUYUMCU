@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
 from .forms import ContactMessageForm
-from .models import FinancialData, Product, News, Category, WhatsAppClick, Blog
+from .models import FinancialData, Product, News, Category, WhatsAppClick, Blog, RateSnapshot
 
 # Ana sayfadaki kısaltılmış "öne çıkanlar" bandı — tam liste /piyasa-durumu/ sayfasında.
 # Not: Panelden bu kodlardan biri silinirse get_ordered_rates otomatik atlar, hata vermez.
@@ -98,6 +98,69 @@ def market_page(request):
         'piyasa_kapali': piyasa_kapali,
     }
     return render(request, 'market.html', context)
+
+
+def market_detail(request, code):
+    """
+    Tek bir kalemin (ör. HAS, CEYREK) detay sayfası: büyük canlı fiyat,
+    anlık değişim ve fiyat geçmişi grafiği. Piyasa Durumu tablosundaki
+    satıra tıklanınca açılır.
+    """
+    kalem = get_object_or_404(FinancialData, code=code.upper(), is_visible=True)
+
+    context = {
+        'kalem': kalem,
+    }
+    return render(request, 'market_detail.html', context)
+
+
+def rate_history_api(request, code):
+    """
+    Grafik verisi: kalemin fiyat geçmişi (RateSnapshot örnekleri).
+    ?gun=1|7|14|30 (varsayılan 7). Noktalar 400'e indirgenerek (downsample)
+    döndürülür - 90 günlük 5dk'lık ham seri binlerce nokta olurdu.
+    Fiyatlar, sitede gösterilenle tutarlı olsun diye O ANKİ çarpanla çarpılır.
+    """
+    kalem = get_object_or_404(FinancialData, code=code.upper(), is_visible=True)
+
+    try:
+        gun = int(request.GET.get('gun', '7'))
+    except ValueError:
+        gun = 7
+    gun = max(1, min(gun, 90))
+
+    baslangic = timezone.now() - timezone.timedelta(days=gun)
+    kayitlar = list(
+        RateSnapshot.objects.filter(code=kalem.code, created_at__gte=baslangic)
+        .order_by('created_at')
+        .values_list('created_at', 'sell_price', 'buy_price')
+    )
+
+    # Downsample: eşit aralıklı en fazla 400 nokta kalsın.
+    MAKS_NOKTA = 400
+    if len(kayitlar) > MAKS_NOKTA:
+        adim = len(kayitlar) / MAKS_NOKTA
+        kayitlar = [kayitlar[int(i * adim)] for i in range(MAKS_NOKTA)] + [kayitlar[-1]]
+
+    import decimal as _dec
+    sat_carpan = _dec.Decimal(str(kalem.sell_multiplier))
+    al_carpan = _dec.Decimal(str(kalem.buy_multiplier))
+
+    points = [
+        {
+            't': zaman.isoformat(),
+            's': str(round(satis * sat_carpan, 2)),
+            'b': str(round(alis * al_carpan, 2)),
+        }
+        for (zaman, satis, alis) in kayitlar
+    ]
+
+    return JsonResponse({
+        'code': kalem.code,
+        'name': kalem.name,
+        'gun': gun,
+        'points': points,
+    })
 
 
 def product_list(request):
