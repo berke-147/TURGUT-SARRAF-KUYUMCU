@@ -23,6 +23,7 @@ from .forms import (
 from .models import (
     Product, News, FinancialData, Category, ProductImage,
     ProductColorOption, ProductSizeOption, ContactMessage, WhatsAppClick, Blog,
+    PriceAlert,
 )
 from .services import AVAILABLE_SOURCE_ITEMS
 
@@ -55,12 +56,60 @@ def dashboard(request):
         'blog_sayisi': Blog.objects.count(),
         'kategori_sayisi': Category.objects.count(),
         'okunmamis_mesaj_sayisi': ContactMessage.objects.filter(is_read=False).count(),
+        'okunmamis_uyari_sayisi': PriceAlert.objects.filter(is_read=False).count(),
+        'son_uyarilar': PriceAlert.objects.all()[:5],
         'whatsapp_bugun': WhatsAppClick.objects.filter(created_at__date=bugun).count(),
         'whatsapp_toplam': WhatsAppClick.objects.count(),
         'son_mesajlar': ContactMessage.objects.all()[:5],
         'son_urunler': Product.objects.all().order_by('-created_at')[:5],
     }
     return render(request, 'panel/dashboard.html', context)
+
+
+# ---------------------------------------------------------------- FİYAT UYARILARI (DEDEKTÖR)
+
+@panel_required
+def price_alert_list(request):
+    """
+    Dedektörün ürettiği fiyat uyarıları: her %1'lik birikimli değişimde bir
+    kayıt düşer. Her uyarının yanında, dükkana yönlendiren (WhatsApp/telefon/
+    konum bilgili) hazır bir 'Son Dakika' mesaj taslağı gösterilir - kopyala
+    ya da tek tıkla haber olarak yayınla.
+    """
+    uyarilar = PriceAlert.objects.all()[:100]
+    return render(request, 'panel/price_alert_list.html', {'uyarilar': uyarilar})
+
+
+@panel_required
+@require_POST
+def price_alert_mark_read(request, pk):
+    uyari = get_object_or_404(PriceAlert, pk=pk)
+    uyari.is_read = True
+    uyari.save(update_fields=['is_read'])
+    return redirect('panel_price_alert_list')
+
+
+@panel_required
+@require_POST
+def price_alert_publish(request, pk):
+    """
+    Uyarının taslak mesajını tek tıkla 'Son Dakika' haberi olarak yayınlar
+    (News, kategori: Piyasa Haberi). Yayınlanan haber sitede Son Dakika
+    bölümünde görünür; panelden istenirse düzenlenebilir/silinebilir.
+    """
+    uyari = get_object_or_404(PriceAlert, pk=pk)
+    yon = "Yükseldi" if uyari.change_percent > 0 else "Düştü"
+    haber = News.objects.create(
+        title=f"{uyari.name} %{abs(uyari.change_percent)} {yon}",
+        content=uyari.taslak_mesaj(),
+        category='news',
+        author=request.user,
+        is_published=True,
+    )
+    uyari.is_read = True
+    uyari.save(update_fields=['is_read'])
+    messages.success(request, f"'{haber.title}' başlıklı Son Dakika haberi yayınlandı.")
+    return redirect('panel_price_alert_list')
 
 
 # ---------------------------------------------------------------- FİNANSAL VERİLER / KAR MARJI

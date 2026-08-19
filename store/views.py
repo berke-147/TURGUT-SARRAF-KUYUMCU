@@ -9,8 +9,9 @@ from .forms import ContactMessageForm
 from .models import FinancialData, Product, News, Category, WhatsAppClick, Blog, RateSnapshot
 
 # Ana sayfadaki kısaltılmış "öne çıkanlar" bandı — tam liste /piyasa-durumu/ sayfasında.
+# Sıra dükkan sahibinin isteği: 24 ayar, 22 ayar (bilezik), çeyrek, cumhuriyet.
 # Not: Panelden bu kodlardan biri silinirse get_ordered_rates otomatik atlar, hata vermez.
-HOME_HIGHLIGHTS = ['HAS', 'CEYREK', 'TAM', 'ONS']
+HOME_HIGHLIGHTS = ['HAS', 'GRAM22', 'CEYREK', 'CUMHURIYET']
 
 # /piyasa-durumu/ başlığındaki hızlı özet (HAS: TL, ONS/$: USD) — ONSUSD, TL
 # değil USD cinsinden olduğu için ana listeye (get_visible_rates) dahil edilmez,

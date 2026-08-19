@@ -49,7 +49,7 @@ import re
 import requests
 from django.utils import timezone
 
-from .models import FinancialData, RateSnapshot
+from .models import FinancialData, PriceAlert, RateSnapshot
 
 # Fiyat geçmişi örnekleme aralığı: bir kalem için EN FAZLA bu sıklıkta
 # geçmiş satırı yazılır (robot 3 sn'de bir dönse bile). Grafik için 5 dk
@@ -58,6 +58,53 @@ GECMIS_ARALIGI = datetime.timedelta(minutes=5)
 
 # Bu süreden eski geçmiş kayıtları otomatik silinir.
 GECMIS_SAKLAMA = datetime.timedelta(days=90)
+
+# Fiyat dedektörü eşiği: son uyarıdan bu yana birikimli değişim bu yüzdeyi
+# aşarsa panel kullanıcısına yeni bir uyarı (PriceAlert) düşer.
+UYARI_ESIGI_YUZDE = decimal.Decimal("1.0")
+
+
+def _degisimi_denetle(code, name, sell_price):
+    """
+    Dedektör: kalemin fiyatı, SON UYARIDAKİ fiyata göre (hiç uyarı yoksa
+    günün açılış referansına göre) %1 veya daha fazla değiştiyse yeni bir
+    PriceAlert oluşturur. Böylece her %1'lik birikimli hareket TEK uyarı
+    üretir - 3 saniyede bir dönen robot uyarı yağmuruna sebep olmaz.
+    Hata olursa sessizce geçer: dedektör, kur güncellemesini asla aksatmamalı.
+    """
+    try:
+        son_uyari = (
+            PriceAlert.objects.filter(code=code)
+            .values('new_price', 'created_at')
+            .first()  # ordering = ['-created_at'] -> en yenisi
+        )
+
+        if son_uyari is not None:
+            referans = son_uyari['new_price']
+        else:
+            kayit = (
+                FinancialData.objects.filter(code=code)
+                .values_list('previous_sell_price', flat=True)
+                .first()
+            )
+            referans = kayit
+
+        if not referans or referans <= 0:
+            return
+
+        degisim = ((sell_price - referans) / referans) * decimal.Decimal("100")
+        if abs(degisim) < UYARI_ESIGI_YUZDE:
+            return
+
+        PriceAlert.objects.create(
+            code=code,
+            name=name,
+            old_price=referans,
+            new_price=sell_price,
+            change_percent=round(degisim, 2),
+        )
+    except Exception:
+        pass
 
 
 def _gecmisi_kaydet(code, buy_price, sell_price):
@@ -374,6 +421,10 @@ def upsert(code, name, sell_price, log, buy_price=None, default_multiplier=None)
 
     # Grafik için fiyat geçmişi örneği (en fazla 5 dk'da bir yazılır).
     _gecmisi_kaydet(code, buy_price, sell_price)
+
+    # Dedektör: %1'lik birikimli değişimde panel kullanıcısına uyarı düşer.
+    if not created:
+        _degisimi_denetle(code, obj.name, sell_price)
 
     durum = "oluşturuldu" if created else "güncellendi"
     log(f"  - {code} {durum}: {sell_price} TL")

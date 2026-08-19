@@ -466,3 +466,72 @@ class RateSnapshot(models.Model):
 
     def __str__(self):
         return f"{self.code} @ {self.created_at:%d.%m.%Y %H:%M} = {self.sell_price}"
+
+
+# 7. FİYAT UYARISI (dedektör): her %1'lik değişimde panel kullanıcısına bildirim
+class PriceAlert(models.Model):
+    """
+    Kur robotu bir kalemde son uyarıdan bu yana %1 veya daha fazla birikimli
+    değişim tespit ettiğinde otomatik oluşturulur (services.py ->
+    _degisimi_denetle). Panelde bildirim olarak listelenir; her uyarının
+    yanında dükkan sahibinin tek tıkla "Son Dakika" haberi olarak
+    yayınlayabileceği hazır bir taslak mesaj bulunur (taslak_mesaj).
+    """
+    code = models.CharField(max_length=10, db_index=True, verbose_name="Kalem Kodu")
+    name = models.CharField(max_length=50, verbose_name="Kalem Adı")
+    old_price = models.DecimalField(max_digits=10, decimal_places=4, verbose_name="Önceki Fiyat (ham)")
+    new_price = models.DecimalField(max_digits=10, decimal_places=4, verbose_name="Yeni Fiyat (ham)")
+    change_percent = models.DecimalField(max_digits=6, decimal_places=2, verbose_name="Değişim %")
+    is_read = models.BooleanField(default=False, verbose_name="Okundu")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Tarih")
+
+    class Meta:
+        verbose_name = "Fiyat Uyarısı"
+        verbose_name_plural = "Fiyat Uyarıları"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        yon = "yükseldi" if self.change_percent > 0 else "düştü"
+        return f"{self.name} %{abs(self.change_percent)} {yon}"
+
+    @property
+    def yon_yukselis(self):
+        return self.change_percent > 0
+
+    def taslak_mesaj(self):
+        """
+        Dükkan sahibine sunulan hazır "Son Dakika" mesajı. Amaç fiyat bilgisi
+        vermekle kalmayıp müşteriyi DÜKKANA YÖNLENDİRMEK: WhatsApp, telefon
+        ve konum bilgileri mesajın içinde hazır gelir (settings/.env'den).
+        """
+        from django.conf import settings as ayarlar
+
+        def tl(deger):
+            # 6750.27 -> "6.750,27" (Türkçe biçim)
+            return f"{deger:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        yon = "yükseldi" if self.change_percent > 0 else "düştü"
+        emoji = "📈" if self.change_percent > 0 else "📉"
+        telefon = getattr(ayarlar, 'BUSINESS_PHONE', '')
+        whatsapp = getattr(ayarlar, 'WHATSAPP_NUMBER', '')
+        adres = getattr(ayarlar, 'BUSINESS_STREET_ADDRESS', '')
+        sehir = getattr(ayarlar, 'BUSINESS_CITY', '')
+
+        satirlar = [
+            f"{emoji} SON DAKİKA: {self.name} son saatlerde %{abs(self.change_percent)} {yon}!",
+            "",
+            f"Güncel fiyat: {tl(self.new_price)} TL (önceki: {tl(self.old_price)} TL).",
+            "",
+            "Altın bozdurmak veya yatırım yapmak için doğru zamanı kaçırmayın — "
+            "güncel kurlar ve size özel fiyat teklifi için hemen bize ulaşın:",
+        ]
+        if telefon:
+            satirlar.append(f"📞 Telefon: {telefon}")
+        if whatsapp:
+            satirlar.append(f"💬 WhatsApp: https://wa.me/{whatsapp}")
+        if adres:
+            konum = f"📍 Mağazamız: {adres}" + (f", {sehir}" if sehir else "")
+            satirlar.append(konum)
+        satirlar.append("")
+        satirlar.append("Turgut Sarraf Kuyumculuk — Gücü Yansıtan Altın, Güveni Veren İsimdir.")
+        return "\n".join(satirlar)

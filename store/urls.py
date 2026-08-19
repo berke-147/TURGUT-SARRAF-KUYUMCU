@@ -43,6 +43,10 @@ urlpatterns = [
 
     path('panel/whatsapp-istatistik/', panel_views.whatsapp_stats, name='panel_whatsapp_stats'),
 
+    path('panel/fiyat-uyarilari/', panel_views.price_alert_list, name='panel_price_alert_list'),
+    path('panel/fiyat-uyarilari/<int:pk>/okundu/', panel_views.price_alert_mark_read, name='panel_price_alert_mark_read'),
+    path('panel/fiyat-uyarilari/<int:pk>/yayinla/', panel_views.price_alert_publish, name='panel_price_alert_publish'),
+
     path('panel/haberler/', panel_views.news_list, name='panel_news_list'),
     path('panel/haberler/yeni/', panel_views.news_create, name='panel_news_create'),
     path('panel/haberler/<int:pk>/duzenle/', panel_views.news_edit, name='panel_news_edit'),
