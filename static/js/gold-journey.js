@@ -1,18 +1,18 @@
 /*
- * Ana sayfa: "Erimiş Altın Dökümü" - basit SVG zeminli, üç aşamalı hikaye.
+ * Ana sayfa: "Altınla Dolan Monogram" - markanın gerçek logosuyla, üç
+ * aşamalı hikaye.
  *
  * #gold-journey section'ı. İçindeki .gold-journey-sticky ekranda sabit
- * kalır. Arka planda TEK bir vektörel (SVG) sahne var ve scroll progress'e
- * bağlı şu sırayla oynar:
- *   1) Pota hafifçe eğilir, erimiş altın akmaya başlar (akış scale-y ile uzar)
- *   2) Kalıp içindeki dolum (clip-path'li rect) yükselerek külçeyi doldurur,
- *      kalıbın etrafında sıcak kor parıltısı belirir
- *   3) Akış kesilir, dolum soğumuş altın rengine döner (crossfade), üzerinden
- *      bir ışıltı süpürmesi geçer ve TS damgası belirir.
- * Foto/video değil - saf SVG attribute/transform animasyonu.
+ * kalır. Ortada markanın TS monogramı (PNG logo) durur ve scroll
+ * progress'e bağlı şu sırayla oynar:
+ *   1) Başta sadece silik bir hayalet logo görünür
+ *   2) Kaydırdıkça altın sarısı versiyonu AŞAĞIDAN YUKARI dolar
+ *      (clip-path inset azaltılarak)
+ *   3) Dolum bitince logo altın bir parlamayla ışır (drop-shadow glow) ve
+ *      üzerinden soldan sağa bir ışıltı süpürmesi geçer (logo maskeli bant).
  *
- * Hikaye 3 karttan oluşur (#gold-journey-rail > .gj-card): "Saf Altın",
- * "Ustanın Eli", "Güvenin Mührü". Her kart SADECE kendi 1 birimlik
+ * Hikaye 3 karttan oluşur (#gold-journey-rail > .gj-card): "Turgut Sarraf",
+ * "Yılların Emeği", "Güvenin Işıltısı". Her kart SADECE kendi 1 birimlik
  * penceresinde yaşar; komşu kartla kısa bir geçiş payı paylaşır:
  *
  *   rel = globalX - kartIndex
@@ -38,14 +38,9 @@
     var izNoktalari = Array.prototype.slice.call(sahne.querySelectorAll('.gj-track-dot'));
     var ipucu = document.getElementById('gold-journey-hint');
 
-    // SVG sahnesinin parçaları - döküm hikayesinin oyuncuları.
-    var pota = sahne.querySelector('.gd-pota');
-    var akis = sahne.querySelector('.gd-akis');
-    var dolum = sahne.querySelector('.gd-dolum');
-    var sogumus = sahne.querySelector('.gd-sogumus');
-    var parilti = sahne.querySelector('.gd-parilti');
-    var damga = sahne.querySelector('.gd-damga');
-    var kor = sahne.querySelector('.gd-kor');
+    // Logo sahnesinin katmanları.
+    var logoDolu = sahne.querySelector('.gd-logo-dolu');
+    var logoParilti = sahne.querySelector('.gd-logo-parilti');
 
     if (!sticky || !kartlar.length) return;
 
@@ -111,64 +106,26 @@
 
         var globalX = progress * TOPLAM_ASAMA; // 0 .. TOPLAM_ASAMA arası "sahne birimi"
 
-        // 1) Döküm sahnesi zaman çizelgesi (progress 0 -> 1):
-        //    %0-10   pota eğilir
-        //    %8-16   akış uzayarak kalıba ulaşır
-        //    %16-64  kalıp dolar (kor parıltısı dolumla birlikte artar)
-        //    %62-72  akış kesilir, pota doğrulur
-        //    %70-84  altın soğur (sıcak turuncudan eskitilmiş altına crossfade)
-        //    %84-94  ışıltı süpürmesi külçenin üzerinden geçer
-        //    %90-100 TS damgası belirir
-        var potaT = yumusat(evreT(progress, 0, 0.10)) - yumusat(evreT(progress, 0.64, 0.08));
-        if (pota) {
-            var aci = (-9 * sinirla(potaT, 0, 1)).toFixed(2);
-            pota.setAttribute('transform', 'rotate(' + aci + ' 200 92)');
+        // 1) Logo sahnesi zaman çizelgesi (progress 0 -> 1):
+        //    %4-64   altın logo aşağıdan yukarı dolar
+        //    %66-88  dolan logo giderek parlar (altın glow)
+        //    %78-96  ışıltı bandı logonun üzerinden soldan sağa süpürülür
+        var dolumT = yumusat(evreT(progress, 0.04, 0.60));
+        var parlamaT = yumusat(evreT(progress, 0.66, 0.22));
+
+        if (logoDolu) {
+            logoDolu.style.clipPath = 'inset(' + (100 - 100 * dolumT).toFixed(1) + '% 0 0 0)';
+            // Parlama: sarılık/parlaklık artar + altın renkli dış ışıma büyür.
+            logoDolu.style.filter =
+                'sepia(1) saturate(' + (2.6 + 1.2 * parlamaT).toFixed(2) + ')' +
+                ' hue-rotate(-8deg)' +
+                ' brightness(' + (1.1 + 0.3 * parlamaT).toFixed(2) + ')' +
+                ' drop-shadow(0 0 ' + (36 * parlamaT).toFixed(0) + 'px rgba(255, 210, 110, ' + (0.8 * parlamaT).toFixed(2) + '))';
         }
 
-        var akisT = yumusat(evreT(progress, 0.08, 0.08)) - yumusat(evreT(progress, 0.62, 0.08));
-        akisT = sinirla(akisT, 0, 1);
-        if (akis) {
-            akis.setAttribute('transform', 'scale(1 ' + akisT.toFixed(3) + ')');
-            akis.setAttribute('opacity', akisT.toFixed(2));
-        }
-
-        var dolumT = yumusat(evreT(progress, 0.16, 0.48));
-        if (dolum) {
-            // Kalıp içi y=302..366 arası (64 birim) - dolum alttan yükselir.
-            var yukseklik = 64 * dolumT;
-            dolum.setAttribute('y', (366 - yukseklik).toFixed(1));
-            dolum.setAttribute('height', yukseklik.toFixed(1));
-        }
-
-        var sogumaT = yumusat(evreT(progress, 0.70, 0.14));
-        if (sogumus) {
-            sogumus.setAttribute('opacity', sogumaT.toFixed(2));
-        }
-
-        if (kor) {
-            // Kor, dolum sürerken parlar; altın soğudukça söner.
-            var korOpaklik = sinirla(dolumT * (1 - sogumaT), 0, 1) * 0.9;
-            kor.setAttribute('opacity', korOpaklik.toFixed(2));
-        }
-
-        if (parilti) {
-            // Işıltı bandı külçenin solundan girip sağından çıkar (clip
-            // sayesinde sadece külçe yüzeyinde görünür).
-            var suprulmeT = evreT(progress, 0.84, 0.10);
-            var x = -80 + 360 * yumusat(suprulmeT);
-            parilti.setAttribute('transform', 'translate(' + x.toFixed(1) + ' 0)');
-        }
-
-        if (damga) {
-            // Mühür, sona saklanmaz: KALIP DOLDUKÇA yavaş yavaş belirir
-            // (dolumun %20'sinden itibaren, dolum bittiğinde tam net).
-            // Altın eriyikten katıya geçerken damganın da "oturması" hissi
-            // için hafif bir büyüme eşlik eder.
-            var damgaT = yumusat(evreT(dolumT, 0.2, 0.75));
-            damga.setAttribute('opacity', damgaT.toFixed(2));
-            var olcek = (0.82 + 0.18 * damgaT).toFixed(3);
-            damga.setAttribute('transform',
-                'translate(200 334) scale(' + olcek + ') translate(-200 -334)');
+        if (logoParilti) {
+            var suprulmeT = yumusat(evreT(progress, 0.78, 0.18));
+            logoParilti.style.transform = 'translateX(' + (-160 + 480 * suprulmeT).toFixed(1) + '%)';
         }
 
         // 2) Kartlar: her biri SADECE kendi 1 birimlik penceresinde yaşar.

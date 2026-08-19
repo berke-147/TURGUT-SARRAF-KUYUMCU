@@ -343,16 +343,62 @@ img {
   justify-content: center;
 }
 
-.gj-scene-svg {
-  width: min(60vmin, 460px);
-  height: auto;
-  filter: drop-shadow(0 12px 32px rgba(0,0,0,.35));
+/* "Altınla Dolan Monogram": üç katmanlı logo sahnesi.
+   1) .gd-logo-bos    - silik hayalet logo (referans siluet)
+   2) .gd-logo-dolu   - altın sarısına filtrelenmiş logo; JS clip-path
+                        inset(X% 0 0 0) değerini azaltarak AŞAĞIDAN YUKARI
+                        doldurur; dolum bitince drop-shadow ile parlar
+   3) .gd-logo-parilti-maske - logo PNG'siyle maskelenmiş kap; içindeki
+                        ışıltı bandı JS ile soldan sağa süpürülür, böylece
+                        parıltı sadece logonun harfleri üzerinde görünür */
+.gd-logo-sahne {
+  position: relative;
+  width: min(44vmin, 330px);
 }
 
-/* Döküm sahnesindeki tüm hareketler JS'te SVG "transform" ATTRIBUTE'u ile
-   yapılır (CSS transform değil) - böylece dönme/ölçek merkezleri SVG
-   koordinatlarıyla (ör. rotate(-9 200 92)) tam kontrol edilir ve
-   transform-box/transform-origin uyumsuzlukları hiç yaşanmaz. */
+.gd-logo-sahne img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.gd-logo-bos {
+  opacity: .14;
+  filter: grayscale(1) brightness(2.4);
+}
+
+.gd-logo-dolu {
+  position: absolute;
+  inset: 0;
+  /* Eskitilmiş altın tonlarını parlak "sarı altına" çeviren filtre zinciri */
+  filter: sepia(1) saturate(2.6) hue-rotate(-8deg) brightness(1.1);
+  clip-path: inset(100% 0 0 0);
+}
+
+.gd-logo-parilti-maske {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: url("../img/logo-dark.png");
+  mask-image: url("../img/logo-dark.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  pointer-events: none;
+}
+
+.gd-logo-parilti {
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(78deg, transparent 0%, rgba(255, 243, 200, .95) 50%, transparent 100%);
+  transform: translateX(-160%);
+}
 
 .gold-journey-overlay {
   position: absolute;
