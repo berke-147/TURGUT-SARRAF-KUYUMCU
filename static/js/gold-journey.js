@@ -160,9 +160,13 @@
         }
 
         if (damga) {
-            var damgaT = yumusat(evreT(progress, 0.90, 0.10));
+            // Mühür, sona saklanmaz: KALIP DOLDUKÇA yavaş yavaş belirir
+            // (dolumun %20'sinden itibaren, dolum bittiğinde tam net).
+            // Altın eriyikten katıya geçerken damganın da "oturması" hissi
+            // için hafif bir büyüme eşlik eder.
+            var damgaT = yumusat(evreT(dolumT, 0.2, 0.75));
             damga.setAttribute('opacity', damgaT.toFixed(2));
-            var olcek = (0.7 + 0.3 * damgaT).toFixed(3);
+            var olcek = (0.82 + 0.18 * damgaT).toFixed(3);
             damga.setAttribute('transform',
                 'translate(200 334) scale(' + olcek + ') translate(-200 -334)');
         }
