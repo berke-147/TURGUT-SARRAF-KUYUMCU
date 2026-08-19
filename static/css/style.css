@@ -493,21 +493,24 @@ img {
   transform: translate(-50%, -50%) scale(1.3);
 }
 
+/* Erişilebilirlik "bölümü atla" bağlantısı: ekran dışında gizli durur,
+   SADECE klavyeyle (Tab) gezinirken odaklanınca görünür. :focus yerine
+   :focus-visible kullanılır - fareyle tıklamada odak üzerinde kalsa bile
+   ekranda ASILI KALMAZ (header'ın üstüne binme sorununun çözümü). */
 .skip-journey {
-  position: absolute;
+  position: fixed;
   top: -100px;
   left: 16px;
-  z-index: 10;
+  z-index: 200;
   background: var(--gold);
-  color: var(--navy);
+  color: #fff;
   padding: 10px 18px;
   border-radius: 6px;
   font-weight: 700;
   font-size: .85rem;
-  transition: top .2s;
 }
 
-.skip-journey:focus {
+.skip-journey:focus-visible {
   top: 16px;
 }
 

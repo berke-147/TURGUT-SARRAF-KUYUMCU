@@ -36,12 +36,26 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     <!-- Google'a işletme olarak tanınmak için (Google Business Profile ile birlikte kullanılır) -->
+    <!-- Google'a site adının "Turgut Sarraf" olduğunu bildirir - arama
+         sonuçlarında uzun başlık yerine bu adın gösterilmesini sağlar. -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Turgut Sarraf",
+        "alternateName": "Turgut Sarraf Kuyumculuk",
+        "url": "{{ site_domain|escapejs }}"
+    }
+    </script>
+
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "JewelryStore",
         "name": "{{ business_name|default:'Turgut Sarraf Kuyumculuk'|escapejs }}",
-        "url": "{{ site_domain|escapejs }}"
+        "url": "{{ site_domain|escapejs }}",
+        "logo": "{{ site_domain|escapejs }}{% static 'img/logo-light-256.png' %}",
+        "image": "{{ site_domain|escapejs }}{% static 'img/og-default.jpg' %}"
         {% if business_phone %},"telephone": "{{ business_phone|escapejs }}"{% endif %}
         {% if business_street_address %},"address": {
             "@type": "PostalAddress",
