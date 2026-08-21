@@ -44,6 +44,7 @@ urlpatterns = [
     path('panel/whatsapp-istatistik/', panel_views.whatsapp_stats, name='panel_whatsapp_stats'),
 
     path('panel/fiyat-uyarilari/', panel_views.price_alert_list, name='panel_price_alert_list'),
+    path('panel/fiyat-uyarilari/toplu/', panel_views.price_alert_bulk, name='panel_price_alert_bulk'),
     path('panel/fiyat-uyarilari/<int:pk>/okundu/', panel_views.price_alert_mark_read, name='panel_price_alert_mark_read'),
     path('panel/fiyat-uyarilari/<int:pk>/yayinla/', panel_views.price_alert_publish, name='panel_price_alert_publish'),
 

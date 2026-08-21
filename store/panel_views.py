@@ -93,15 +93,21 @@ def price_alert_mark_read(request, pk):
 @require_POST
 def price_alert_publish(request, pk):
     """
-    Uyarının taslak mesajını tek tıkla 'Son Dakika' haberi olarak yayınlar
-    (News, kategori: Piyasa Haberi). Yayınlanan haber sitede Son Dakika
-    bölümünde görünür; panelden istenirse düzenlenebilir/silinebilir.
+    Uyarının mesajını 'Son Dakika' haberi olarak yayınlar (News, kategori:
+    Piyasa Haberi). Sayfadaki metin kutusunda yapılan DÜZENLEMELER aynen
+    kullanılır (icerik_<pk> alanı); kutu hiç gönderilmediyse/boşsa otomatik
+    taslağa düşülür. Yayınlanan haber panelden düzenlenebilir/silinebilir.
     """
     uyari = get_object_or_404(PriceAlert, pk=pk)
+
+    icerik = (request.POST.get(f'icerik_{pk}') or '').strip()
+    if not icerik:
+        icerik = uyari.taslak_mesaj()
+
     yon = "Yükseldi" if uyari.change_percent > 0 else "Düştü"
     haber = News.objects.create(
         title=f"{uyari.name} %{abs(uyari.change_percent)} {yon}",
-        content=uyari.taslak_mesaj(),
+        content=icerik,
         category='news',
         author=request.user,
         is_published=True,
@@ -109,6 +115,35 @@ def price_alert_publish(request, pk):
     uyari.is_read = True
     uyari.save(update_fields=['is_read'])
     messages.success(request, f"'{haber.title}' başlıklı Son Dakika haberi yayınlandı.")
+    return redirect('panel_price_alert_list')
+
+
+@panel_required
+@require_POST
+def price_alert_bulk(request):
+    """
+    Toplu işlem: seçim kutularıyla işaretlenen uyarıları topluca 'okundu'
+    yapar ya da siler. islem = 'okundu' | 'sil'.
+    """
+    ids = request.POST.getlist('secili')
+    islem = request.POST.get('islem', '')
+
+    if not ids:
+        messages.warning(request, "Hiç uyarı seçmedin - önce soldaki kutulardan seçim yap.")
+        return redirect('panel_price_alert_list')
+
+    secilenler = PriceAlert.objects.filter(pk__in=ids)
+    adet = secilenler.count()
+
+    if islem == 'sil':
+        secilenler.delete()
+        messages.success(request, f"{adet} uyarı silindi.")
+    elif islem == 'okundu':
+        secilenler.update(is_read=True)
+        messages.success(request, f"{adet} uyarı okundu olarak işaretlendi.")
+    else:
+        messages.warning(request, "Geçersiz işlem.")
+
     return redirect('panel_price_alert_list')
 
 

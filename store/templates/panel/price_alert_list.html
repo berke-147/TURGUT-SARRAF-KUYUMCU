@@ -12,58 +12,98 @@
 
             <p class="empty-note" style="margin-bottom: 22px;">
                 Sistem, bir kalemin fiyatı son uyarıdan bu yana <strong>%1 veya daha fazla</strong>
-                değiştiğinde buraya otomatik uyarı düşürür. Her uyarının yanında, müşteriyi
-                dükkana yönlendiren hazır bir "Son Dakika" mesajı bulunur — kopyalayıp
-                WhatsApp durumunda/sosyal medyada paylaşabilir ya da tek tıkla sitede
-                haber olarak yayınlayabilirsin.
+                değiştiğinde buraya otomatik uyarı düşürür. Mesajı yayınlamadan önce
+                <strong>kutunun içinde serbestçe düzenleyebilirsin</strong> — "Yayınla" düzenlediğin
+                halini kullanır. Soldaki kutularla birden fazla uyarı seçip topluca
+                okundu işaretleyebilir ya da silebilirsin.
             </p>
 
-            {% for uyari in uyarilar %}
-            <div class="alert-card {% if not uyari.is_read %}alert-card--new{% endif %}">
-                <div class="alert-card-head">
-                    <div>
-                        {% if not uyari.is_read %}<span class="badge badge-gold">Yeni</span>{% endif %}
-                        <strong>{{ uyari.name }}</strong>
-                        <span class="alert-pct {% if uyari.yon_yukselis %}up{% else %}down{% endif %}">
-                            {% if uyari.yon_yukselis %}▲ +{% else %}▼ {% endif %}{{ uyari.change_percent }}%
-                        </span>
+            {% if uyarilar %}
+            <!-- TEK form: toplu işlemler form'un kendi action'ına, kart içindeki
+                 Yayınla/Okundu butonları ise formaction ile kendi adreslerine
+                 gider - böylece iç içe form (geçersiz HTML) kullanılmaz ve
+                 düzenlenen mesaj metni her durumda sunucuya ulaşır. -->
+            <form method="post" action="{% url 'panel_price_alert_bulk' %}">
+                {% csrf_token %}
+
+                <div class="alert-bulk-bar">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <input type="checkbox" id="uyari-tumunu-sec">
+                        Tümünü seç
+                    </label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="submit" name="islem" value="okundu" class="btn btn-secondary" style="padding:8px 18px; font-size:.75rem;">
+                            Seçilenleri Okundu İşaretle
+                        </button>
+                        <button type="submit" name="islem" value="sil" class="btn btn-secondary" style="padding:8px 18px; font-size:.75rem;"
+                                onclick="return confirm('Seçili uyarılar kalıcı olarak silinecek. Emin misin?');">
+                            Seçilenleri Sil
+                        </button>
                     </div>
-                    <span class="alert-date">{{ uyari.created_at|date:"d.m.Y H:i" }}</span>
                 </div>
 
-                <div class="alert-card-prices">
-                    {{ uyari.old_price|floatformat:2 }} TL &rarr; <strong>{{ uyari.new_price|floatformat:2 }} TL</strong>
-                </div>
+                {% for uyari in uyarilar %}
+                <div class="alert-card {% if not uyari.is_read %}alert-card--new{% endif %}">
+                    <div class="alert-card-head">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <input type="checkbox" name="secili" value="{{ uyari.pk }}" class="uyari-sec" title="Bu uyarıyı seç">
+                            {% if not uyari.is_read %}<span class="badge badge-gold">Yeni</span>{% endif %}
+                            <strong>{{ uyari.name }}</strong>
+                            <span class="alert-pct {% if uyari.yon_yukselis %}up{% else %}down{% endif %}">
+                                {% if uyari.yon_yukselis %}▲ +{% else %}▼ {% endif %}{{ uyari.change_percent }}%
+                            </span>
+                        </div>
+                        <span class="alert-date">{{ uyari.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
 
-                <details class="alert-draft">
-                    <summary>Hazır Son Dakika mesajını gör</summary>
-                    <textarea readonly rows="9" onclick="this.select()">{{ uyari.taslak_mesaj }}</textarea>
-                    <p class="empty-note" style="margin: 6px 0 0; font-size: .8rem;">
-                        Metne tıklayınca tamamı seçilir - Ctrl+C ile kopyalayabilirsin.
-                    </p>
-                </details>
+                    <div class="alert-card-prices">
+                        {{ uyari.old_price|floatformat:2 }} TL &rarr; <strong>{{ uyari.new_price|floatformat:2 }} TL</strong>
+                    </div>
 
-                <div class="alert-card-actions">
-                    <form method="post" action="{% url 'panel_price_alert_publish' uyari.pk %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn" style="padding:8px 18px; font-size:.75rem;">Sitede Haber Olarak Yayınla</button>
-                    </form>
-                    {% if not uyari.is_read %}
-                    <form method="post" action="{% url 'panel_price_alert_mark_read' uyari.pk %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-secondary" style="padding:8px 18px; font-size:.75rem;">Okundu İşaretle</button>
-                    </form>
-                    {% endif %}
+                    <details class="alert-draft">
+                        <summary>Son Dakika mesajını gör / düzenle</summary>
+                        <textarea name="icerik_{{ uyari.pk }}" rows="10">{{ uyari.taslak_mesaj }}</textarea>
+                        <p class="empty-note" style="margin: 6px 0 0; font-size: .8rem;">
+                            Metni istediğin gibi düzenleyebilirsin - "Sitede Haber Olarak Yayınla"
+                            bu kutudaki son hali yayınlar.
+                        </p>
+                    </details>
+
+                    <div class="alert-card-actions">
+                        <button type="submit" class="btn" style="padding:8px 18px; font-size:.75rem;"
+                                formaction="{% url 'panel_price_alert_publish' uyari.pk %}">
+                            Sitede Haber Olarak Yayınla
+                        </button>
+                        {% if not uyari.is_read %}
+                        <button type="submit" class="btn btn-secondary" style="padding:8px 18px; font-size:.75rem;"
+                                formaction="{% url 'panel_price_alert_mark_read' uyari.pk %}">
+                            Okundu İşaretle
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-            {% empty %}
+                {% endfor %}
+            </form>
+            {% else %}
             <p class="empty-note">
                 Henüz uyarı yok. Piyasada %1'lik bir hareket olduğunda ilk uyarı burada belirecek.
             </p>
-            {% endfor %}
+            {% endif %}
 
             <p style="margin-top: 18px;"><a href="{% url 'panel_dashboard' %}">&larr; Panele dön</a></p>
         </div>
     </section>
+
+    <script>
+        (function () {
+            var tumu = document.getElementById('uyari-tumunu-sec');
+            if (!tumu) return;
+            tumu.addEventListener('change', function () {
+                document.querySelectorAll('.uyari-sec').forEach(function (kutu) {
+                    kutu.checked = tumu.checked;
+                });
+            });
+        })();
+    </script>
 
 {% endblock %}

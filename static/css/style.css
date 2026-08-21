@@ -1752,6 +1752,26 @@ select.panel-input {
 }
 
 /* ---------- Panel: Fiyat Uyarıları (dedektör) ---------- */
+.alert-bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.uyari-sec,
+#uyari-tumunu-sec {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
 .alert-card {
   background: #fdfaf3;
   border: 1px solid var(--border);

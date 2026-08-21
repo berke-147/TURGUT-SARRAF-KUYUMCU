@@ -84,6 +84,27 @@
              ' ' + d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     }
 
+    function mesajGoster(metin) {
+      if (bosMesaj) {
+        bosMesaj.textContent = metin;
+        bosMesaj.hidden = false;
+      }
+      if (tuval) tuval.style.display = 'none';
+    }
+
+    // Chart.js CDN'den asenkron gelebilir (ya da ilk CDN başarısız olup
+    // yedeğe düşülebilir). Kütüphane hazır olana kadar 250ms arayla bekler,
+    // ~5 saniyede hâlâ yoksa kullanıcıya açıklayıcı bir mesaj gösterir -
+    // ASLA sessizce boş bir grafik alanı bırakmaz.
+    function chartIleCalis(isKalani, denemeSayisi) {
+      if (typeof Chart !== 'undefined') { isKalani(); return; }
+      if ((denemeSayisi || 0) >= 20) {
+        mesajGoster('Grafik bileşeni yüklenemedi. Sayfayı yenilemeyi deneyin; sorun sürerse internet bağlantınız grafik kütüphanesinin indirilmesini engelliyor olabilir.');
+        return;
+      }
+      setTimeout(function () { chartIleCalis(isKalani, (denemeSayisi || 0) + 1); }, 250);
+    }
+
     function grafigiYukle(gun) {
       fetch(historyUrl + '?gun=' + gun, { cache: 'no-store' })
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
@@ -91,10 +112,23 @@
           var noktalar = veri.points || [];
           var yeterli = noktalar.length >= 2;
 
-          if (bosMesaj) bosMesaj.hidden = yeterli;
-          if (tuval) tuval.style.display = yeterli ? '' : 'none';
-          if (!yeterli || typeof Chart === 'undefined') return;
+          if (!yeterli) {
+            mesajGoster('Bu aralık için henüz yeterli geçmiş verisi birikmedi. Sistem fiyatları düzenli aralıklarla kaydediyor; grafik kısa süre içinde burada dolmaya başlayacak.');
+            return;
+          }
 
+          if (bosMesaj) bosMesaj.hidden = true;
+          if (tuval) tuval.style.display = '';
+
+          chartIleCalis(function () { grafigiCiz(noktalar, gun); }, 0);
+        })
+        .catch(function (err) {
+          console.error('Grafik verisi alınamadı:', err);
+          mesajGoster('Grafik verisi alınamadı. Sayfayı yenilemeyi deneyin.');
+        });
+    }
+
+    function grafigiCiz(noktalar, gun) {
           var etiketler = noktalar.map(function (n) { return etiketFormatla(n.t, gun); });
           var satislar = noktalar.map(function (n) { return parseFloat(n.s); });
 
@@ -153,8 +187,6 @@
               },
             },
           });
-        })
-        .catch(function (err) { console.error('Grafik verisi alınamadı:', err); });
     }
 
     var aralikKutusu = document.getElementById('detail-ranges');

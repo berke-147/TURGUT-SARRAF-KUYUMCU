@@ -66,6 +66,11 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<!-- Grafik kütüphanesi: önce cdnjs denenir; yüklenemezse (ağ/engel/404)
+     otomatik olarak jsdelivr yedeğine geçilir. market-detail.js ayrıca
+     kütüphanenin gelmesini bekleyip yeniden dener - sessizce boş grafik
+     bırakmaz, olmadı mı kullanıcıya açıklayıcı mesaj gösterir. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+        onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
 <script src="{% static 'js/market-detail.js' %}" defer></script>
 {% endblock %}
